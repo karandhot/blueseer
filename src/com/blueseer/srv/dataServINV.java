@@ -51,6 +51,7 @@ import static com.blueseer.inv.invData.deleteUOMMstr;
 import static com.blueseer.inv.invData.deleteWareHouseMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.deleteZeroInventoryRecs;
+import static com.blueseer.inv.invData.getBOMInit;
 import static com.blueseer.inv.invData.getBOMMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
@@ -823,6 +824,14 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "getInvMaintInit_min" : { 
             response.getWriter().print(ArrayListStringArrayToJson(getInvMaintInit_min(request.getHeader("param1"), request.getHeader("param2"))));
+            break;  
+        }
+        
+        case "getBOMInit" : { 
+            response.getWriter().print(ArrayListStringArrayToJson(getBOMInit(request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"))));
             break;  
         }
         

@@ -5760,7 +5760,23 @@ public class invData {
         }
 
     public static ArrayList getBOMInit(String item, String site, String bomid, String userid) {
-               ArrayList myarray = new ArrayList();
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBOMInit"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", site});
+            list.add(new String[]{"param3", bomid});
+            list.add(new String[]{"param4", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServADM"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        ArrayList myarray = new ArrayList();
              try{
                 Connection con = null;
                 if (ds != null) {
