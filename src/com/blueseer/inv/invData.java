@@ -700,6 +700,21 @@ public class invData {
     
     
     public static String[] addPBM(pbm_mstr x, bom_mstr y, boolean addBomID) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","addPBM"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(y);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(addBomID);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordError};
@@ -810,6 +825,20 @@ public class invData {
     }
         
     public static String[] updatePBM(pbm_mstr x, bom_mstr y) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","updatePBM"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(y);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
@@ -869,6 +898,18 @@ public class invData {
     }
     
     public static String[] addupdateBOMMstr(bom_mstr x) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","addupdateBOMMstr"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.updateRecordError};
@@ -955,6 +996,21 @@ public class invData {
     
     
     public static String[] deletePBM(pbm_mstr x, bom_mstr y, int pbmRecsRemaining) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id","deletePBM"});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String jsonString = objectMapper.writeValueAsString(x);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(y);
+                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pbmRecsRemaining);
+                System.out.println("HERE: " + jsonString);
+                return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())};
+            }
+        }
         String[] m = new String[2];
         if (x == null) {
             return new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordError};
@@ -1012,6 +1068,22 @@ public class invData {
     public static bom_mstr getBOMMstr(String[] x) {
         bom_mstr r = null;
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id","getBOMMstr"});
+            list.add(new String[]{"param1",x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(list, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, bom_mstr.class); 
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                m = new String[]{BlueSeerUtils.ErrorBit, getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName())}; 
+                r = new bom_mstr(m);
+                return r;
+            }
+        }
         String sql = "select * from bom_mstr where bom_item = ? and bom_id = ? ;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
       	PreparedStatement ps = con.prepareStatement(sql);) {

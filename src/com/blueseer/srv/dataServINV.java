@@ -38,6 +38,7 @@ import static com.blueseer.inv.invData.addUOMMstr;
 import static com.blueseer.inv.invData.addUpdateINVCtrl;
 import static com.blueseer.inv.invData.addWareHouseMstr;
 import static com.blueseer.inv.invData.addWorkCenterMstr;
+import static com.blueseer.inv.invData.addupdateBOMMstr;
 import static com.blueseer.inv.invData.bind_tree;
 import static com.blueseer.inv.invData.bind_tree_op;
 import static com.blueseer.inv.invData.deleteItemMstr;
@@ -50,6 +51,7 @@ import static com.blueseer.inv.invData.deleteUOMMstr;
 import static com.blueseer.inv.invData.deleteWareHouseMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.deleteZeroInventoryRecs;
+import static com.blueseer.inv.invData.getBOMMstr;
 import static com.blueseer.inv.invData.getBOMsByItemSite;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getComponentByBomOp;
@@ -219,6 +221,82 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break;
           }
+        
+        case "addupdateBOMMstr" : { 
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            ObjectMapper objectMapper = new ObjectMapper();
+            invData.bom_mstr x = objectMapper.readValue(sb.toString(), invData.bom_mstr.class);            
+            response.getWriter().print(arrayToJson(addupdateBOMMstr(x)));
+            break;
+          }
+        
+        case "getBOMMstr" : { 
+            String[] key = new String[]{request.getHeader("param1")}; 
+            invData.bom_mstr x = getBOMMstr(key);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "addPBM" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+          
+            invData.pbm_mstr pm = objectMapper.readValue(ca[0], invData.pbm_mstr.class); 
+            invData.bom_mstr bm = objectMapper.readValue(ca[1], invData.bom_mstr.class); 
+            boolean b = objectMapper.readValue(ca[2], boolean.class); 
+            response.getWriter().print(arrayToJson(invData.addPBM(pm, bm, b)));  
+            break;
+        }
+        
+        case "updatePBM" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+          
+            invData.pbm_mstr pm = objectMapper.readValue(ca[0], invData.pbm_mstr.class); 
+            invData.bom_mstr bm = objectMapper.readValue(ca[1], invData.bom_mstr.class); 
+            response.getWriter().print(arrayToJson(invData.updatePBM(pm, bm)));  
+            break;
+        }
+        
+        case "deletePBM" : {
+            String line;
+            StringBuilder sb = new StringBuilder();  
+            BufferedReader reader = request.getReader();  // as string
+            while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+            } 
+            reader.close();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String[] ca = sb.toString().split("=_=", -1);
+          
+            invData.pbm_mstr pm = objectMapper.readValue(ca[0], invData.pbm_mstr.class); 
+            invData.bom_mstr bm = objectMapper.readValue(ca[1], invData.bom_mstr.class); 
+            int b = objectMapper.readValue(ca[2], Integer.class); 
+            response.getWriter().print(arrayToJson(invData.deletePBM(pm, bm, b)));  
+            break;
+        }
+        
         
         case "addPLMstr" : { 
             String line;
