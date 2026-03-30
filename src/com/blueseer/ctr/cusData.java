@@ -3051,7 +3051,7 @@ public class cusData {
     
     public static String[] getCustInfo(String cust) {
            // get billto specific data
-            // aracct, arcc, currency, bank, terms, carrier, onhold, site, taxcode
+            // aracct, arcc, currency, bank, terms, carrier, onhold, site, taxcode, cascadediscount
         String[] custinfo = new String[]{"","","","","","","", "", "", ""};
         String sql = "select cm_ar_acct, cm_ar_cc, cm_curr, cm_bank, cm_terms, cm_carrier, cm_onhold, cm_site, cm_tax_code, cm_cascade from cm_mstr where cm_code = ?;";
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection()); 

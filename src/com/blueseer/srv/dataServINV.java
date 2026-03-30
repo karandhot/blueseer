@@ -977,7 +977,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             DefaultMutableTreeNode x = bind_tree(request.getHeader("param1"), request.getHeader("param2"), null);
             ObjectMapper objectMapper = new ObjectMapper(); 
             String r = "";
-            if (x != null && x.getChildCount() > 0) {
+            if (x != null && x.getChildCount() > 1) {
             r = objectMapper.writeValueAsString(x);
             } 
             response.getWriter().print(r);

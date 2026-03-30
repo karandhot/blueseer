@@ -3604,7 +3604,7 @@ public class EDI {
         } else {
             shipto = e.bs_shipto;
         }
-        String[] custinfo = cusData.getCustInfo(e.bs_billto);
+        String[] custinfo = cusData.getCustInfo(e.bs_billto);  // aracct, arcc, currency, bank, terms, carrier, onhold, site, taxcode, cascadediscount
         String site = OVData.getDefaultSite();
         String isconfirm = getSysMetaValue("system", "ordercontrol", "autoconfirm");
         if (isconfirm.isBlank()) {
@@ -3710,6 +3710,9 @@ public class EDI {
              }
              netprice = principal / bsParseDouble(e.getDetQty(j).replace(defaultDecimalSeparator, '.'));
              disc = netprice / bsParseDouble(e.getDetListPrice(j).replace(defaultDecimalSeparator, '.'));
+             if (disc == 1) {
+                 disc = 0;
+             }
            }
           
           
