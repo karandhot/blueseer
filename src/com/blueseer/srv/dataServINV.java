@@ -966,6 +966,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper(); 
             String r = "";
             if (x != null && x.getChildCount() > 0) {
+                System.out.println("HERE: " + x.getChildCount() + "/" + x.getDepth());
             r = objectMapper.writeValueAsString(x);
             } 
             response.getWriter().print(r);
