@@ -5769,7 +5769,7 @@ public class invData {
             list.add(new String[]{"param3", bomid});
             list.add(new String[]{"param4", userid});
             try {
-                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServADM"));
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
             } catch (IOException ex) {
                 bslog(ex);
                 return null;
