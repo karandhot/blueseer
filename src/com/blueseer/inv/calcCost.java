@@ -171,6 +171,7 @@ public class calcCost {
              mylist.add(lowerbdncost + upperbdncost);
              mylist.add(lowerovhcost + upperovhcost);
              mylist.add(loweroutcost + upperoutcost);
+             mylist.add(lowermtlcost + uppermtlcost + lowerlbrcost + upperlbrcost + lowerbdncost + upperbdncost + lowerovhcost + upperovhcost + loweroutcost + upperoutcost);
           if (bscon != null) {
             try {
                 bscon.close();

@@ -7820,7 +7820,7 @@ public class invData {
             Statement st = con.createStatement();
             ResultSet res = null;
             try{
-                res = st.executeQuery("select it_item, it_desc, it_uom, it_prodline, it_code, it_rev, it_status, it_site, it_loc, it_wh, it_expiredays " +
+                res = st.executeQuery("select it_item, it_desc, it_uom, it_prodline, it_code, it_rev, it_status, it_site, it_loc, it_wh, it_expiredays, itc_total " +
                         " from item_mstr " +
                         " left outer join item_cost on itc_item = it_item and itc_set = 'standard' " +
                         " where it_item = " + "'" + item + "';" );
