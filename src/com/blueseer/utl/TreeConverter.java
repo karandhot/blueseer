@@ -80,6 +80,7 @@ public class TreeConverter {
     
     public static class MyNodePOJO {
     private Object userObject;
+    private boolean allowsChildren;
     private List<MyNodePOJO> children;
     // You might also want an allowsChildren field if needed
 
@@ -100,9 +101,15 @@ public class TreeConverter {
         this.children = children;
     }
 
-        private boolean getAllowsChildren() {
-            throw new UnsupportedOperationException("Not supported yet."); 
-        }
+    public boolean getAllowsChildren() {
+        return allowsChildren; 
+    }
+    
+    public void setAllowsChildren(boolean allowsChildren) { 
+        this.allowsChildren = allowsChildren; 
+    }
+        
+        
     }
    
 }
