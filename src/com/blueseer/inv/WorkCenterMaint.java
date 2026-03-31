@@ -97,7 +97,7 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerV {
                 ArrayList<String[]> initDataSets = null;
                 String defaultSite = "";
                 String defaultCurrency = "";
-                boolean canupdate = false;
+                boolean canUpdate = false;
    // global datatablemodel declarations    
                 
                 
@@ -303,7 +303,7 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerV {
               defaultCurrency = s[1];  
             }
             if (s[0].equals("canupdate")) {
-              canupdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
             }            
             if (s[0].equals("site")) {
               defaultSite = s[1]; 
@@ -350,7 +350,7 @@ public class WorkCenterMaint extends javax.swing.JPanel implements IBlueSeerV {
     }
     
     public boolean validateInput(dbaction x) {
-       if (! canupdate) {
+       if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
