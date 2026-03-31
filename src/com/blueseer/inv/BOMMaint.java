@@ -69,7 +69,6 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import com.blueseer.utl.DTData;
-import static com.blueseer.utl.OVData.canUpdate;
 import static com.blueseer.utl.OVData.getDefaultBomID;
 import java.awt.Color;
 import java.awt.Component;
