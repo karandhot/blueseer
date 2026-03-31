@@ -4798,49 +4798,7 @@ public class OVData {
         return r;
     }
     
-    public static boolean isBOMUnique(String bom, String item, String routing) {
-       boolean r = true;
-       ArrayList<String> boms = new ArrayList<String>();
-        try {
-            
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                res = st.executeQuery("select bom_routing from bom_mstr "
-                        + " where bom_id = " + "'" + bom + "'" +
-                        " and bom_item = " + "'" + item + "'" + ";");
-                while (res.next()) {
-                    if (! res.getString("bom_routing").toLowerCase().equals(routing.toLowerCase())) {
-                        r = false;
-                    } 
-                }
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                    con.close();
-               
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        return r;
-
-    }
-
+    
     public static int getBomPbmCount(String bomid) {
        int x = 0;
         try {

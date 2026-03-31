@@ -42,6 +42,7 @@ import static com.blueseer.inv.invData.addupdateBOMMstr;
 import com.blueseer.inv.invData.bom_mstr;
 import static com.blueseer.inv.invData.deletePBM;
 import static com.blueseer.inv.invData.getBOMMstr;
+import static com.blueseer.inv.invData.getBOMValidation;
 import static com.blueseer.inv.invData.getComponentByBomOp;
 import static com.blueseer.inv.invData.getItemDetail;
 import static com.blueseer.inv.invData.getItemOutCost;
@@ -477,7 +478,7 @@ public class BOMMaint extends javax.swing.JPanel {
     
     public boolean validateInput(String x) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -505,26 +506,31 @@ public class BOMMaint extends javax.swing.JPanel {
                     return b;
         }
 
-        if (! OVData.isValidItem(tbkey.getText())) {
+        
+        
+        String[] v = getBOMValidation(tbkey.getText(), tbbomid.getText(), ddrouting.getSelectedItem().toString()); // validItem, isUniqueBOM, defaultbom
+        
+        if (! v[0].equals("1")) {
             b = false;
             tbkey.requestFocus();
             return b;
         }
         
-        if (! OVData.isBOMUnique(tbbomid.getText(), tbkey.getText(), ddrouting.getSelectedItem().toString())) {
+        //if (! invData.isBOMUnique(tbbomid.getText(), tbkey.getText(), ddrouting.getSelectedItem().toString())) {
+        if (! v[1].equals("1")) {
             bsmf.MainFrame.show(getMessageTag(1115));
             tbbomid.requestFocus();
             return false;
         }
         
-        if (OVData.getDefaultBomID(tbkey.getText()).isEmpty() && ! cbdefault.isSelected()) {
+        if (v[2].isEmpty() && ! cbdefault.isSelected()) {
             b = false;
             bsmf.MainFrame.show(getMessageTag(1166));
             cbdefault.requestFocus();
             return b;
         }
         
-        if (OVData.getDefaultBomID(tbkey.getText()).equals(tbbomid.getText()) && ! cbdefault.isSelected()) {
+        if (v[2].equals(tbbomid.getText()) && ! cbdefault.isSelected()) {
             b = false;
             bsmf.MainFrame.show(getMessageTag(1168));
             cbdefault.requestFocus();
@@ -538,13 +544,14 @@ public class BOMMaint extends javax.swing.JPanel {
            return b;
        } 
 
+        /*
         if (! OVData.isValidItem(ddcomp.getSelectedItem().toString())) {
             b = false;
             ddcomp.requestFocus();
             bsmf.MainFrame.show(getMessageTag(1026, ddcomp.getName()));
             return b;
         }
-
+        */
 
         if (ddop.getSelectedItem() == null) {
            b = false;
@@ -2246,7 +2253,7 @@ public class BOMMaint extends javax.swing.JPanel {
             return;
         }
         
-        if (! OVData.isBOMUnique(tbbomid.getText(), tbkey.getText(), ddrouting.getSelectedItem().toString())) {
+        if (! invData.isBOMUnique(tbbomid.getText(), tbkey.getText(), ddrouting.getSelectedItem().toString())) {
             bsmf.MainFrame.show(getMessageTag(1115));
             tbbomid.requestFocus();
             return;

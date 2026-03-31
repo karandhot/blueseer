@@ -53,6 +53,7 @@ import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.deleteZeroInventoryRecs;
 import static com.blueseer.inv.invData.getBOMInit;
 import static com.blueseer.inv.invData.getBOMMstr;
+import static com.blueseer.inv.invData.getBOMValidation;
 import static com.blueseer.inv.invData.getBOMsByItemSite;
 import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getComponentByBomOp;
@@ -101,6 +102,7 @@ import static com.blueseer.inv.invData.getWHLOCfromSerialNumber;
 import static com.blueseer.inv.invData.getWareHouseMaintInit;
 import static com.blueseer.inv.invData.getWareHouseMstr;
 import static com.blueseer.inv.invData.getWorkCenterMstr;
+import static com.blueseer.inv.invData.isBOMUnique;
 import static com.blueseer.inv.invData.rebaseCurrentCost;
 import static com.blueseer.inv.invData.resetBOMDefault;
 import static com.blueseer.inv.invData.updateCurrentItemCost;
@@ -121,6 +123,7 @@ import static com.blueseer.utl.BlueSeerUtils.HashMapStringIntegerToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringStringArrToJson;
 import static com.blueseer.utl.BlueSeerUtils.HashMapStringStringToJson;
 import static com.blueseer.utl.BlueSeerUtils.arrayToJson;
+import static com.blueseer.utl.BlueSeerUtils.boolToJson;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuth;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
@@ -732,6 +735,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             break;
         }
         
+        case "getBOMValidation" : {       
+            response.getWriter().print(arrayToJson(getBOMValidation(request.getHeader("param1"), request.getHeader("param2"), request.getHeader("param3"))));
+            break;
+        }
+        
         case "getBOMsByItemSite_mg" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite_mg(request.getHeader("param1"))));
             break;
@@ -751,6 +759,13 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "getBOMsByItemSite" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite(request.getHeader("param1"))));
             break;
+        }
+        
+        case "isBOMUnique" : {
+        response.getWriter().println(boolToJson(isBOMUnique(request.getHeader("param1"), 
+                request.getHeader("param2"), 
+                request.getHeader("param3")))); 
+        break;
         }
             
         case "getLocationListByWarehouse" : {       

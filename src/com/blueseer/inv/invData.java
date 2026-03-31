@@ -53,6 +53,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListStringArray;
+import static com.blueseer.utl.BlueSeerUtils.jsonToBoolean;
 import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringString;
 import static com.blueseer.utl.BlueSeerUtils.jsonToHashMapStringStringArr;
@@ -3446,6 +3447,155 @@ public class invData {
    
 
     /* misc functions */
+    public static boolean isBOMUnique(String bom, String item, String routing) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "isBOMUnique"});
+            list.add(new String[]{"param1", bom});
+            list.add(new String[]{"param2", item});
+            list.add(new String[]{"param3", routing});
+            try {
+                return jsonToBoolean(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return false;
+            }
+        }
+       boolean r = true;
+       ArrayList<String> boms = new ArrayList<String>();
+        try {
+            
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select bom_routing from bom_mstr "
+                        + " where bom_id = " + "'" + bom + "'" +
+                        " and bom_item = " + "'" + item + "'" + ";");
+                while (res.next()) {
+                    if (! res.getString("bom_routing").toLowerCase().equals(routing.toLowerCase())) {
+                        r = false;
+                    } 
+                }
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                    con.close();
+               
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return r;
+
+    }
+
+    public static String[] getBOMValidation(String item, String bom, String routing) {
+       if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBOMValidation"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", bom});
+            list.add(new String[]{"param3", routing});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) { 
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+       String[] x = new String[]{"","",""}; // validItem, isUniqueBOM, defaultbom   
+       int i = 0;
+       ArrayList<String> boms = new ArrayList<String>();
+        try {
+            
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                // isvalid item
+                res = st.executeQuery("select it_item from item_mstr "
+                        + " where it_item = " + "'" + item + "';");
+                while (res.next()) {
+                    i++;
+                }
+                if (i > 0) {
+                    x[0] = "1";
+                }
+                i = 0; // reset i
+                
+                
+                // DefaultBOM
+                res = st.executeQuery("select distinct ps_bom from pbm_mstr "
+                        + " where ps_parent = " + "'" + item + "';");
+                while (res.next()) {
+                    i++;
+                  boms.add(res.getString("ps_bom")); 
+                }
+                res.close();
+                if (i > 0) {
+                    for (String s : boms) {
+                        res = st.executeQuery("select bom_id from bom_mstr "
+                        + " where bom_id = " + "'" + s + "'" +
+                          " and bom_primary = '1' " + ";");
+                        while (res.next()) {
+                           x[1] = res.getString("bom_id");
+                        } 
+                    }
+                }
+                i = 0;
+                
+                // isUniqueBOM
+                x[2] = "1"; // true
+                res = st.executeQuery("select bom_routing from bom_mstr "
+                        + " where bom_id = " + "'" + bom + "'" +
+                        " and bom_item = " + "'" + item + "'" + ";");
+                while (res.next()) {
+                    if (res.getString("bom_routing").toLowerCase().equals(routing.toLowerCase())) {
+                        x[2] = "0"; // false
+                    } 
+                }
+
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                    con.close();
+               
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return x;
+
+    }
+
     public static String getQPRBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {
