@@ -64,6 +64,7 @@ import static com.blueseer.utl.BlueSeerUtils.xNull;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getPackQtyForItem;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -9233,6 +9234,7 @@ public class invData {
                 String returnstring = sendServerPost(list, "", null, "dataServINV");
                 DefaultMutableTreeNode r = new DefaultMutableTreeNode();
                 if (returnstring != null && ! returnstring.isBlank()) {
+                    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                  r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
                 }
                 return r;
