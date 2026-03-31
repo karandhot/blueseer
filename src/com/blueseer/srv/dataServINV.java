@@ -133,13 +133,17 @@ import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getTableInfo;
+import com.blueseer.utl.TreeConverter;
+import com.blueseer.utl.TreeConverter.MyNodePOJO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -1016,11 +1020,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "bind_tree" : { 
             DefaultMutableTreeNode x = bind_tree(request.getHeader("param1"), request.getHeader("param2"), null);
-            ObjectMapper objectMapper = new ObjectMapper(); 
-            objectMapper.addMixIn(DefaultMutableTreeNode.class, TreeNodeMixin.class);
+            MyNodePOJO pojoRoot = TreeConverter.convertToPOJO(x);
+            ObjectMapper objectMapper = new ObjectMapper();
             String r = "";
             if (x != null && x.getChildCount() > 0) {
-            r = objectMapper.writeValueAsString(x);
+            r = objectMapper.writeValueAsString(pojoRoot);
             } 
             response.getWriter().print(r);
             break;
@@ -1139,10 +1143,8 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     return requestHeaders.toString();
 }
 
-    public abstract class TreeNodeMixin{
-        @JsonIgnore public abstract TreeNode getFirstChild();
-        @JsonIgnore public abstract TreeNode getLastChild();
-        @JsonIgnore public abstract Enumeration<?> children();
-        @JsonIgnore public abstract boolean getAllowsChildren();
-    }
+    
+    
 }
+
+
