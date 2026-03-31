@@ -91,6 +91,7 @@ import static com.blueseer.inv.invData.getQualMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
 import static com.blueseer.inv.invData.getRoutingMstrList;
+import static com.blueseer.inv.invData.getRoutingOperations;
 import static com.blueseer.inv.invData.getTotalCostElements;
 import static com.blueseer.inv.invData.getTranMstr;
 import static com.blueseer.inv.invData.getTranMstrBySerial;
@@ -737,9 +738,15 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         }
         
         case "getInvMetaOperators" : {       
-            response.getWriter().print(ArrayListStringArrayToJson(getInvMetaOperators(request.getHeader("param1"), request.getHeader("param2"))));
+            response.getWriter().print(ArrayListStringToJson(getInvMetaOperators(request.getHeader("param1"), request.getHeader("param2"))));
             break;
         }
+        
+        case "getRoutingOperations" : {       
+            response.getWriter().print(ArrayListStringToJson(getRoutingOperations(request.getHeader("param1"))));
+            break;
+        }
+        
         
         case "getBOMsByItemSite" : {       
             response.getWriter().print(ArrayListStringArrayToJson(getBOMsByItemSite(request.getHeader("param1"))));

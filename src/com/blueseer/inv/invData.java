@@ -3943,7 +3943,18 @@ public class invData {
     }
      
     public static ArrayList<String> getRoutingOperations(String routing) {
-          ArrayList<String> r = new ArrayList<String>();
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getRoutingOperations"});
+            list.add(new String[]{"param1", routing});
+            try {
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        ArrayList<String> r = new ArrayList<String>();
          try{
             
             Connection con = null;
@@ -5450,14 +5461,14 @@ public class invData {
         return set;
     }
     
-    public static ArrayList getInvMetaOperators(String item, String op) {
+    public static ArrayList<String> getInvMetaOperators(String item, String op) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();
             list.add(new String[]{"id", "getInvMetaOperators"});
             list.add(new String[]{"param1", item});
              list.add(new String[]{"param2", op});
             try {
-                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServINV"));
+                return jsonToArrayListString(sendServerPost(list, "", null, "dataServINV"));
             } catch (IOException ex) {
                 bslog(ex);
                 return null;
