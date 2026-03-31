@@ -9234,6 +9234,7 @@ public class invData {
                 String returnstring = sendServerPost(list, "", null, "dataServINV");
                 DefaultMutableTreeNode r = new DefaultMutableTreeNode();
                 if (returnstring != null && ! returnstring.isBlank()) {
+                    System.out.println("HERE: " + returnstring);
                     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                  r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
                 }
