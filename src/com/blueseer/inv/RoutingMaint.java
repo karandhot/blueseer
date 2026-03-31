@@ -534,7 +534,7 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerV {
             runhours = 0;
         }   
             
-        wf_mstr x = new wf_mstr(null, 
+        wf_mstr wf = new wf_mstr(null, 
            tbkey.getText(),
            tbopdesc.getText(),
            ddsite.getSelectedItem().toString(),
@@ -545,7 +545,7 @@ public class RoutingMaint extends javax.swing.JPanel implements IBlueSeerV {
            tableoperation.getValueAt(j, 4).toString().replace(defaultDecimalSeparator, '.'),
            bsNumber(runhours) 
         );
-        list.add(x);
+        list.add(wf);
         }
         
         return list;

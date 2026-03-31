@@ -58,6 +58,7 @@ import static com.blueseer.inv.invData.getBOMsByItemSite_mg;
 import static com.blueseer.inv.invData.getComponentByBomOp;
 import static com.blueseer.inv.invData.getCurrentCost;
 import static com.blueseer.inv.invData.getINVCtrl;
+import static com.blueseer.inv.invData.getInMstr;
 import static com.blueseer.inv.invData.getInvBrowseView;
 import static com.blueseer.inv.invData.getInvMaintInit;
 import static com.blueseer.inv.invData.getInvMaintInit_min;
@@ -89,6 +90,7 @@ import static com.blueseer.inv.invData.getQPRBrowseView;
 import static com.blueseer.inv.invData.getQualMstr;
 import static com.blueseer.inv.invData.getRecentTransByItem;
 import static com.blueseer.inv.invData.getRoutingMstr;
+import static com.blueseer.inv.invData.getRoutingMstrList;
 import static com.blueseer.inv.invData.getTotalCostElements;
 import static com.blueseer.inv.invData.getTranMstr;
 import static com.blueseer.inv.invData.getTranMstrBySerial;
@@ -612,7 +614,6 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             ObjectMapper objectMapper = new ObjectMapper();
             invData.wf_mstr[] sdarray = objectMapper.readValue(sb.toString(), invData.wf_mstr[].class);
             ArrayList<invData.wf_mstr> sdlist = new ArrayList<invData.wf_mstr>(Arrays.asList(sdarray)); 
-            invData.wf_mstr x = objectMapper.readValue(sb.toString(), invData.wf_mstr.class);            
             response.getWriter().print(arrayToJson(addRoutingMstr(sdlist)));
             break;
           }
@@ -917,6 +918,22 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(arrayToJson(getItemDetail(request.getHeader("param1"))));
             break;    
         }
+        
+        case "getRoutingMstrList" : { 
+            ArrayList<invData.wf_mstr> x = getRoutingMstrList(new String[]{request.getHeader("param1")}); 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
+        
+        case "getInMstr" : { 
+            ArrayList<invData.in_mstr> x = getInMstr(new String[]{request.getHeader("param1")}); 
+            ObjectMapper objectMapper = new ObjectMapper();
+            String r = objectMapper.writeValueAsString(x);
+            response.getWriter().print(r);
+            break;
+          }
         
         case "getItemComponentDetail" : {
             response.getWriter().print(arrayToJson(getItemComponentDetail(request.getHeader("param1"), request.getHeader("param2"))));

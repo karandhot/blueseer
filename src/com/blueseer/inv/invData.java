@@ -62,6 +62,7 @@ import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.xNull;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getPackQtyForItem;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.sql.DriverManager;
@@ -1780,6 +1781,20 @@ public class invData {
     public static ArrayList<wf_mstr> getRoutingMstrList(String[] x) {
         ArrayList<wf_mstr> r = new ArrayList<wf_mstr>();
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<String[]>();
+            paramlist.add(new String[]{"id", "getRoutingMstrList"});
+            paramlist.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, new TypeReference<ArrayList<wf_mstr>>() {});
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return r;
+            }
+        }
         String sql = "";
         if (x.length == 1) {
             sql = "select * from wf_mstr where wf_id = ? order by wf_op;";
@@ -3040,6 +3055,20 @@ public class invData {
     public static ArrayList<in_mstr> getInMstr(String[] x) {
         ArrayList<in_mstr> r = new ArrayList<in_mstr>();
         String[] m = new String[2];
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> paramlist = new ArrayList<String[]>();
+            paramlist.add(new String[]{"id", "getInMstr"});
+            paramlist.add(new String[]{"param1",  x[0]});
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                String returnstring = sendServerPost(paramlist, "", null, "dataServINV");
+                r = objectMapper.readValue(returnstring, new TypeReference<ArrayList<in_mstr>>() {});
+                return r;
+            } catch (IOException ex) {
+                bslog(ex);
+                return r;
+            }
+        }
         String sql = "select * from in_mstr where in_item = ? order by in_loc;";
         
         try (Connection con = (ds == null ? DriverManager.getConnection(url + db, user, pass) : ds.getConnection());   
