@@ -9269,7 +9269,7 @@ public class invData {
             DefaultMutableTreeNode opnode = new DefaultMutableTreeNode(myvalue);
             opnode = get_nodes_by_op_detail_new(item, item, myvalue, bomid, bscon);
             mynode.add(opnode);
-            System.out.println("HERE BOM: " + opnode.toString());   
+            System.out.println("HERE BOM count: " + + mynode.getChildCount() + "/" + opnode.toString());   
         }
        return mynode;
       }
