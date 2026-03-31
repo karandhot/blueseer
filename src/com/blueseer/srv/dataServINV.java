@@ -133,6 +133,7 @@ import static com.blueseer.utl.OVData.getCodeMstrValueList;
 import static com.blueseer.utl.OVData.getNextNbr;
 import static com.blueseer.utl.OVData.getSysMetaData;
 import static com.blueseer.utl.OVData.getTableInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -144,6 +145,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 
 
 /**
@@ -1015,6 +1017,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         case "bind_tree" : { 
             DefaultMutableTreeNode x = bind_tree(request.getHeader("param1"), request.getHeader("param2"), null);
             ObjectMapper objectMapper = new ObjectMapper(); 
+            objectMapper.addMixIn(DefaultMutableTreeNode.class, TreeNodeMixin.class);
             String r = "";
             if (x != null && x.getChildCount() > 0) {
             r = objectMapper.writeValueAsString(x);
@@ -1136,5 +1139,10 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     return requestHeaders.toString();
 }
 
-
+    public abstract class TreeNodeMixin{
+        @JsonIgnore public abstract TreeNode getFirstChild();
+        @JsonIgnore public abstract TreeNode getLastChild();
+        @JsonIgnore public abstract Enumeration<?> children();
+        @JsonIgnore public abstract boolean getAllowsChildren();
+    }
 }
