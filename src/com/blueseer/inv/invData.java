@@ -3571,8 +3571,8 @@ public class invData {
                         + " where bom_id = " + "'" + bom + "'" +
                         " and bom_item = " + "'" + item + "'" + ";");
                 while (res.next()) {
-                    if (res.getString("bom_routing").toLowerCase().equals(routing.toLowerCase())) {
-                        x[2] = "0"; // false
+                    if (! res.getString("bom_routing").toLowerCase().equals(routing.toLowerCase())) {
+                        x[2] = "0"; // false  more than one routing for this bom
                     } 
                 }
 

@@ -516,12 +516,13 @@ public class BOMMaint extends javax.swing.JPanel {
         }
         
         //if (! invData.isBOMUnique(tbbomid.getText(), tbkey.getText(), ddrouting.getSelectedItem().toString())) {
+        /* needs revisiting
         if (! v[1].equals("1")) {
             bsmf.MainFrame.show(getMessageTag(1115));
             tbbomid.requestFocus();
             return false;
         }
-        
+        */
         if (v[2].isEmpty() && ! cbdefault.isSelected()) {
             b = false;
             bsmf.MainFrame.show(getMessageTag(1166));
