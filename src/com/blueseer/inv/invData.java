@@ -9246,8 +9246,9 @@ public class invData {
        ArrayList<String> myops = new ArrayList<String>();
         //myops = OVData.getItemRoutingOPs(mypart);  //based on itr_cost
        //  myops = invData._getItemWFOPs(item, bscon);   // based on it_wf and wf_mstr
-        myops = invData.getRoutingOperationsByBOM(bomid);  // based on the specific BOM id
-        
+       
+       myops = invData.getRoutingOperationsByBOM(bomid);  // based on the specific BOM id
+       System.out.println("HERE BOM: " + bomid + "/" + myops.size());   
         if (bscon == null) {
             if (ds != null) {
                  try {
@@ -9268,6 +9269,7 @@ public class invData {
             DefaultMutableTreeNode opnode = new DefaultMutableTreeNode(myvalue);
             opnode = get_nodes_by_op_detail_new(item, item, myvalue, bomid, bscon);
             mynode.add(opnode);
+            System.out.println("HERE BOM: " + opnode.toString());   
         }
        return mynode;
       }
