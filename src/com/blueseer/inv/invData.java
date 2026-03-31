@@ -63,6 +63,8 @@ import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import static com.blueseer.utl.BlueSeerUtils.xNull;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getPackQtyForItem;
+import com.blueseer.utl.TreeConverter;
+import static com.blueseer.utl.TreeConverter.fromPOJO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9236,7 +9238,8 @@ public class invData {
                 if (returnstring != null && ! returnstring.isBlank()) {
                     System.out.println("HERE: " + returnstring);
                     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                 r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
+                    r = fromPOJO(objectMapper.readValue(returnstring, TreeConverter.MyNodePOJO.class));
+                // r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
                 }
                 return r;
             } catch (IOException ex) {

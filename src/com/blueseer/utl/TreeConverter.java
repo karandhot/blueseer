@@ -66,6 +66,18 @@ public class TreeConverter {
         return pojoNode;
     }
     
+    public static DefaultMutableTreeNode fromPOJO(MyNodePOJO pojo) {
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode(pojo.getUserObject(), pojo.getAllowsChildren());
+
+        if (pojo.getChildren() != null) {
+            for (MyNodePOJO childPOJO : pojo.getChildren()) {
+                // The add method automatically sets the parent of the child node
+                node.add(fromPOJO(childPOJO)); // Recursive call
+            }
+        }
+        return node;
+    }
+    
     public static class MyNodePOJO {
     private Object userObject;
     private List<MyNodePOJO> children;
@@ -87,6 +99,10 @@ public class TreeConverter {
     public void setChildren(List<MyNodePOJO> children) {
         this.children = children;
     }
-}
+
+        private boolean getAllowsChildren() {
+            throw new UnsupportedOperationException("Not supported yet."); 
+        }
+    }
    
 }
