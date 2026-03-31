@@ -46,7 +46,9 @@ public class TreeConverter {
         MyNodePOJO pojoNode = new MyNodePOJO();
         // Get the user object associated with the tree node
         pojoNode.setUserObject(treeNode.getUserObject());
-
+         pojoNode.setAllowsChildren(treeNode.getAllowsChildren());
+         
+         
         // Recursively convert the children
         if (treeNode.getChildCount() > 0) {
             List<MyNodePOJO> childrenList = new ArrayList<>();
