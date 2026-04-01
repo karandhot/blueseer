@@ -1008,11 +1008,11 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         
         case "bind_tree_op" : { 
             DefaultMutableTreeNode x = bind_tree_op(request.getHeader("param1"));
+            MyNodePOJO pojoRoot = TreeConverter.convertToPOJO(x);
             ObjectMapper objectMapper = new ObjectMapper(); 
             String r = "";
-            if (x != null && x.getChildCount() > 1) {
-              //  System.out.println("HERE: " + x.getChildCount() + "/" + x.getDepth());
-            r = objectMapper.writeValueAsString(x);
+            if (x != null && x.getChildCount() > 0) {
+            r = objectMapper.writeValueAsString(pojoRoot);
             } 
             response.getWriter().print(r);
             break;

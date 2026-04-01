@@ -9152,7 +9152,9 @@ public class invData {
                 String returnstring = sendServerPost(list, "", null, "dataServINV");
                 DefaultMutableTreeNode r = new DefaultMutableTreeNode();
                 if (returnstring != null && ! returnstring.isBlank()) {
-                 r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
+                // r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
+                 objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                 r = fromPOJO(objectMapper.readValue(returnstring, TreeConverter.MyNodePOJO.class));
                 }
                 return r;
             } catch (IOException ex) {
@@ -9236,10 +9238,8 @@ public class invData {
                 String returnstring = sendServerPost(list, "", null, "dataServINV");
                 DefaultMutableTreeNode r = new DefaultMutableTreeNode();
                 if (returnstring != null && ! returnstring.isBlank()) {
-                    System.out.println("HERE: " + returnstring);
                     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                     r = fromPOJO(objectMapper.readValue(returnstring, TreeConverter.MyNodePOJO.class));
-                // r = objectMapper.readValue(returnstring, DefaultMutableTreeNode.class); 
                 }
                 return r;
             } catch (IOException ex) {
