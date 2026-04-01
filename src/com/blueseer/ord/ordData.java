@@ -7204,6 +7204,9 @@ public class ordData {
             }
         }
        
+       LocalDate now = LocalDate.now();
+       now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        
         try{
         Connection con = null;
             if (ds != null) {
@@ -7214,7 +7217,8 @@ public class ordData {
         Statement st = con.createStatement();
         try{
            st.executeUpdate(
-                 " update so_mstr set so_status = " + "'" + status + "'" + 
+                 " update so_mstr set so_status = " + "'" + status + "'" + "," +
+                 " so_mod_date = " + "'" + now + "'" +
                  " where so_po = " + "'" + po + "'" + ";" );
         }
         catch (SQLException s){
@@ -7245,6 +7249,9 @@ public class ordData {
             }
         }
        
+        LocalDate now = LocalDate.now();
+        now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        
         try{
         Connection con = null;
             if (ds != null) {
@@ -7255,7 +7262,8 @@ public class ordData {
         Statement st = con.createStatement();
         try{
            st.executeUpdate(
-                 " update so_mstr set so_due_date = " + "'" + duedate + "'" + 
+                 " update so_mstr set so_due_date = " + "'" + duedate + "'" + "," +
+                 " so_mod_date = " + "'" + now + "'" +
                  " where so_po = " + "'" + po + "'" + ";" );
            for (String[] det : detlist) { // line, qty, listprice
                st.executeUpdate(
@@ -7278,8 +7286,7 @@ public class ordData {
         MainFrame.bslog(e);
     }
     }
-    
-    
+        
     public static void applyOrderChange(String changeID, String po) {
         
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {

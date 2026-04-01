@@ -3560,14 +3560,14 @@ public class EDI {
             updateOrder05(e.po, e.duedate, changelines);
             
             changedesc = "so_due_date-> " + " Old: " + sales.so().so_due_date() + "  New: " + e.duedate;
-            change_log cl = new change_log(null, "", e.po, "so_mstr", "OrderMaint", "EDI_850", changedesc, "", "EDI_05", "");
+            change_log cl = new change_log(null, "", sales.so().so_nbr(), "so_mstr", "OrderMaint", "EDI_850", changedesc, "", "EDI_05", "");
             cllist.add(cl);
             for (int j = 0; j < e.getDetCount(); j++ ) {
                 System.out.println("HERE: " + sales.sod().get(j).sod_listprice() + "/" + e.getDetListPrice(j) );
-               changedesc = "sod_listprice-> " + " Old: " + sales.sod().get(j).sod_listprice() + "  New: " + e.getDetListPrice(j); 
+               changedesc = "line: " + j + " item: " + sales.sod().get(j).sod_item() + "   sod_listprice-> " + " Old: " + sales.sod().get(j).sod_listprice() + "  New: " + e.getDetListPrice(j); 
                cl = new change_log(null, "", e.po, "so_mstr", "OrderMaint", "EDI_850", changedesc, "", "EDI_05", "");
                cllist.add(cl);
-               changedesc = "sod_ord_qty-> " + " Old: " + sales.sod().get(j).sod_ord_qty() + "  New: " + e.getDetQty(j); 
+               changedesc = "line: " + j + " item: " + sales.sod().get(j).sod_item() + "   sod_ord_qty-> " + " Old: " + sales.sod().get(j).sod_ord_qty() + "  New: " + e.getDetQty(j); 
                cl = new change_log(null, "", e.po, "so_mstr", "OrderMaint", "EDI_850", changedesc, "", "EDI_05", "");
                cllist.add(cl);
             }
