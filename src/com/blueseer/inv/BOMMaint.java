@@ -27,15 +27,9 @@ SOFTWARE.
 package com.blueseer.inv;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
 import static bsmf.MainFrame.defaultDecimalSeparator;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
 import com.blueseer.utl.OVData;
-import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
 import static com.blueseer.inv.invData.addPBM;
 import static com.blueseer.inv.invData.addupdateBOMMstr;
@@ -45,8 +39,6 @@ import static com.blueseer.inv.invData.getBOMMstr;
 import static com.blueseer.inv.invData.getBOMValidation;
 import static com.blueseer.inv.invData.getComponentByBomOp;
 import static com.blueseer.inv.invData.getItemDetail;
-import static com.blueseer.inv.invData.getItemOutCost;
-import static com.blueseer.inv.invData.getItemOvhCost;
 import com.blueseer.inv.invData.pbm_mstr;
 import static com.blueseer.inv.invData.updateCurrentItemCost;
 import static com.blueseer.inv.invData.updatePBM;
@@ -76,17 +68,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Locale;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -514,15 +498,7 @@ public class BOMMaint extends javax.swing.JPanel {
             tbkey.requestFocus();
             return b;
         }
-        
-        //if (! invData.isBOMUnique(tbbomid.getText(), tbkey.getText(), ddrouting.getSelectedItem().toString())) {
-        /* needs revisiting
-        if (! v[1].equals("1")) {
-            bsmf.MainFrame.show(getMessageTag(1115));
-            tbbomid.requestFocus();
-            return false;
-        }
-        */
+      
         if (v[2].isEmpty() && ! cbdefault.isSelected()) {
             b = false;
             bsmf.MainFrame.show(getMessageTag(1166));
@@ -544,14 +520,6 @@ public class BOMMaint extends javax.swing.JPanel {
            return b;
        } 
 
-        /*
-        if (! OVData.isValidItem(ddcomp.getSelectedItem().toString())) {
-            b = false;
-            ddcomp.requestFocus();
-            bsmf.MainFrame.show(getMessageTag(1026, ddcomp.getName()));
-            return b;
-        }
-        */
 
         if (ddop.getSelectedItem() == null) {
            b = false;
@@ -588,9 +556,7 @@ public class BOMMaint extends javax.swing.JPanel {
           
         // init data
         bomdata = invData.getBOMInit(key[0], defaultSite, key[1], bsmf.MainFrame.userid);
-        
-        // lets first determine if there are any BOMs default or alternates
-       // BomID = OVData.getDefaultBomID(key[0]);
+       
         for (String[] code : bomdata) {
             if (code[0].equals("defaultbom"))
             BomID = code[1];
@@ -650,7 +616,7 @@ public class BOMMaint extends javax.swing.JPanel {
        comp = (DefaultMutableTreeNode)o;
       }
       if (proceed && comp != null && comp.getLevel() == 2) {
-         m = deletePBM(createRecord(comp.toString()), createRecordBomMstr(), OVData.getBomPbmCount(BomID)); 
+         m = deletePBM(createRecord(comp.toString()), createRecordBomMstr()); 
          updateCurrentItemCost(tbkey.getText());  
       } else {
            m = new String[] {BlueSeerUtils.ErrorBit, BlueSeerUtils.deleteRecordCanceled}; 
@@ -2010,7 +1976,7 @@ public class BOMMaint extends javax.swing.JPanel {
       //  bsmf.MainFrame.show(node.getLevel() + "/" + node.getDepth());
         // let's lookup Operation elements if parent operation is clicked on
         if (parent != null && (level((TreeNode)jTree1.getModel().getRoot(), (TreeNode)o) == 1) && (parent.toString().equals(tbkey.getText()))) {
-            String[] e = OVData.getBOMParentOpElements(parent.toString(), node.toString());
+            String[] e = invData.getBOMParentOpElements(parent.toString(), node.toString());
             if (e != null) {
                 double pph = bsParseDouble(e[5]);
                 pph = 1 / pph;
@@ -2183,10 +2149,7 @@ public class BOMMaint extends javax.swing.JPanel {
     }//GEN-LAST:event_tbppssimFocusLost
 
     private void btrollActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btrollActionPerformed
-       /*
-       OVData.setStandardCosts(site, parent);
-       getCostSets(parent);
-       */
+      
        setPanelComponentState(this, false);
        executeTask("run", new String[]{tbkey.getText(), ""});
        

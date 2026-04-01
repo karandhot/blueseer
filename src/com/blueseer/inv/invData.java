@@ -999,8 +999,37 @@ public class invData {
         return rows;
     }
     
+    public static int _getBomPbmCount(String bomid, Connection con) throws SQLException {
+       int x = 0;
+       Statement st = null;
+       ResultSet res = null;
+            try {
+                st = con.createStatement();
+                res = st.executeQuery("select * from pbm_mstr "
+                        + " inner join bom_mstr on bom_id = ps_bom "
+                        + " where ps_bom = " + "'" + bomid + "';");
+                while (res.next()) {
+                    x++;
+                }
+
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+                
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+            }
+        
+        return x;
+
+    }
+
     
-    public static String[] deletePBM(pbm_mstr x, bom_mstr y, int pbmRecsRemaining) {
+    public static String[] deletePBM(pbm_mstr x, bom_mstr y) {
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<>();
             list.add(new String[]{"id","deletePBM"});
@@ -1008,7 +1037,6 @@ public class invData {
             try {
                 String jsonString = objectMapper.writeValueAsString(x);
                 jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(y);
-                jsonString = jsonString + "=_=" + objectMapper.writeValueAsString(pbmRecsRemaining);
                 System.out.println("HERE: " + jsonString);
                 return jsonToStringArray(sendServerPost(list, jsonString, null, "dataServINV"));
             } catch (IOException ex) {
@@ -1027,10 +1055,13 @@ public class invData {
             } else {
               con = DriverManager.getConnection(url + db, user, pass);  
             }
-            if (pbmRecsRemaining == 1) { // if only 1 pbm_mstr remaining for this bom id...delete bom id
+            
+            _deletePBM(x, con); 
+            
+            if (_getBomPbmCount(x.ps_bom(), con) == 0) { // if 0 pbm_mstr remaining for this bom id...delete bom id
                 _deleteBomMstr(y, con);                
             }
-            _deletePBM(x, con);  
+            
             m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.deleteRecordSuccess};
         } catch (SQLException s) {
              MainFrame.bslog(s);
@@ -9309,6 +9340,74 @@ public class invData {
         return mynode;
      } 
      
+    public static String[] getBOMParentOpElements(String parent, String op) {
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getBOMParentOpElements"});
+            list.add(new String[]{"param1", parent});
+            list.add(new String[]{"param2", op});
+            try {
+                return jsonToStringArray(sendServerPost(list, "", null, "dataServINV"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        }
+        String[] myarray = new String[10];
+         try{
+            
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+
+                res = st.executeQuery("select wf_setup_hours, wf_run_hours, " +
+                        " wc_run_rate, wc_run_crew, wc_setup_rate, wc_setup, " +
+                        " wc_bdn_rate, wc_cc, wf_desc, wc_desc " +
+                        " from wf_mstr " +
+                        " inner join wc_mstr on wf_cell = wc_cell " +
+                        " inner join item_mstr on it_wf = wf_id " +
+                        " where it_item = " + "'" + parent + "'" + 
+                        " and wf_op = " + "'" + op + "'" +  ";" );
+               
+                while (res.next()) {
+                myarray = new String[]{
+                    res.getString("wc_run_rate"),
+                    res.getString("wc_setup_rate"),
+                    res.getString("wc_bdn_rate"),
+                    res.getString("wc_run_crew"),
+                    res.getString("wc_setup"),
+                    res.getString("wf_run_hours"),
+                    res.getString("wf_setup_hours"),
+                    res.getString("wc_cc"),
+                    res.getString("wf_desc"),
+                    res.getString("wc_desc")
+                    };                    
+                }
+               
+           }
+            catch (SQLException s){
+                MainFrame.bslog(s);
+            } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+        }
+        return myarray; 
+        
+    }
+    
+    
      
     
                

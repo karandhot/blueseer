@@ -4799,46 +4799,7 @@ public class OVData {
     }
     
     
-    public static int getBomPbmCount(String bomid) {
-       int x = 0;
-        try {
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                res = st.executeQuery("select * from pbm_mstr "
-                        + " inner join bom_mstr on bom_id = ps_bom "
-                        + " where ps_bom = " + "'" + bomid + "';");
-                while (res.next()) {
-                    x++;
-                }
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-        return x;
-
-    }
-
+    
     public static ArrayList<String> getBOM(String item, String bomid) {
         ArrayList myarray = new ArrayList();
         try {
@@ -10374,60 +10335,6 @@ return outvalue;
         
     }
     
-    public static String[] getBOMParentOpElements(String parent, String op) {
-           String[] myarray = new String[10];
-         try{
-            
-        Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-        
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                res = st.executeQuery("select wf_setup_hours, wf_run_hours, " +
-                        " wc_run_rate, wc_run_crew, wc_setup_rate, wc_setup, " +
-                        " wc_bdn_rate, wc_cc, wf_desc, wc_desc " +
-                        " from wf_mstr " +
-                        " inner join wc_mstr on wf_cell = wc_cell " +
-                        " inner join item_mstr on it_wf = wf_id " +
-                        " where it_item = " + "'" + parent + "'" + 
-                        " and wf_op = " + "'" + op + "'" +  ";" );
-               
-                while (res.next()) {
-                myarray = new String[]{
-                    res.getString("wc_run_rate"),
-                    res.getString("wc_setup_rate"),
-                    res.getString("wc_bdn_rate"),
-                    res.getString("wc_run_crew"),
-                    res.getString("wc_setup"),
-                    res.getString("wf_run_hours"),
-                    res.getString("wf_setup_hours"),
-                    res.getString("wc_cc"),
-                    res.getString("wf_desc"),
-                    res.getString("wc_desc")
-                    };                    
-                }
-               
-           }
-            catch (SQLException s){
-                MainFrame.bslog(s);
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               con.close();
-        }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-        }
-        return myarray; 
-        
-    }
     
     public static ArrayList<String> getWorkCellList() {
            ArrayList myarray = new ArrayList();
@@ -13939,7 +13846,7 @@ return myarray;
          return myarray;
      }
 
-    public static Double simulateCost(String site, String item, String opvar, 
+    public static double simulateCost(String site, String item, String opvar, 
                                       double runratevar,
                                       double setupratevar,
                                       double burdenratevar,
@@ -13949,6 +13856,31 @@ return myarray;
                                       double setupcrewvar,
                                       double lotsizevar,
                                       boolean doMatl) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "simulateCost"});
+            list.add(new String[]{"param1",  site});
+            list.add(new String[]{"param2",  item});
+            list.add(new String[]{"param3",  opvar});
+            list.add(new String[]{"param4",  bsNumber(runratevar)});
+            list.add(new String[]{"param5",  bsNumber(setupratevar)});
+            list.add(new String[]{"param6",  bsNumber(burdenratevar)});
+            list.add(new String[]{"param7",  bsNumber(runhoursvar)});
+            list.add(new String[]{"param8",  bsNumber(setuphoursvar)});
+            list.add(new String[]{"param9",  bsNumber(runcrewvar)});
+            list.add(new String[]{"param10",  bsNumber(setupcrewvar)});
+            list.add(new String[]{"param11",  bsNumber(lotsizevar)});
+            list.add(new String[]{"param12",  BlueSeerUtils.boolToString(doMatl)});
+            try {
+                return jsonToDouble(sendServerPost(list, "", null, "dataServOV")); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return 0.00;
+            }
+        }
+        
+        
         double x = 0.00;
         Double labor = 0.0;
          Double burden = 0.0;

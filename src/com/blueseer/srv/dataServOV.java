@@ -121,6 +121,7 @@ import static com.blueseer.utl.OVData.isValidVendor;
 import static com.blueseer.utl.OVData.isValidWarehouse;
 import static com.blueseer.utl.OVData.isValidWorkCenter;
 import static com.blueseer.utl.OVData.setStandardCosts;
+import static com.blueseer.utl.OVData.simulateCost;
 import static com.blueseer.utl.OVData.sourceOrder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -397,6 +398,23 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     bsParseDouble(request.getHeader("param3"))))); 
             break;    
         }
+        
+        case "simulateCost" : {
+            response.getWriter().print(doubleToJson(simulateCost(request.getHeader("param1"),
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    bsParseDouble(request.getHeader("param4")),
+                    bsParseDouble(request.getHeader("param5")),
+                    bsParseDouble(request.getHeader("param6")),
+                    bsParseDouble(request.getHeader("param7")),
+                    bsParseDouble(request.getHeader("param8")),
+                    bsParseDouble(request.getHeader("param9")),
+                    bsParseDouble(request.getHeader("param10")),
+                    bsParseDouble(request.getHeader("param11")),
+                    BlueSeerUtils.ConvertStringToBool(request.getHeader("param12"))))); 
+            break;    
+        }
+        
         
         case "getWeekNbrByDate" :        
             response.getWriter().print(ArrayListStringToJson(getWeekNbrByDate(request.getHeader("param1"), request.getHeader("param2"))));
