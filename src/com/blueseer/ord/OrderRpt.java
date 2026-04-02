@@ -82,6 +82,7 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.List;
@@ -444,6 +445,7 @@ public class OrderRpt extends javax.swing.JPanel {
         cbbackorder.setSelected(true);
         cberror.setSelected(true);
         cbcancel.setSelected(true);
+        cbmodified.setSelected(false);
         btdetail.setEnabled(false);
         detailpanel.setVisible(false);
         
@@ -812,6 +814,13 @@ public class OrderRpt extends javax.swing.JPanel {
                 continue;    
             if (! cbcancel.isSelected() && rowData[11].toString().equals(getGlobalProgTag("cancel")))
                 continue; 
+            if (cbmodified.isSelected()) {
+                LocalDate date1 = BlueSeerUtils.parseDateLD(rowData[12].toString());
+                LocalDate date2 = BlueSeerUtils.parseDateLD(rowData[6].toString());
+                    if (date1 != null && date2 != null && date1.isEqual(date2)) {
+                        continue;
+                    }
+                }
 
 
             rowData[8] = bsParseDouble(currformat(rowData[8].toString()));
@@ -1044,6 +1053,7 @@ public class OrderRpt extends javax.swing.JPanel {
         jLabel10 = new javax.swing.JLabel();
         cbcancel = new javax.swing.JCheckBox();
         btexport = new javax.swing.JButton();
+        cbmodified = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
         labelcount = new javax.swing.JLabel();
@@ -1189,6 +1199,8 @@ public class OrderRpt extends javax.swing.JPanel {
             }
         });
 
+        cbmodified.setText("Modified");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -1223,11 +1235,6 @@ public class OrderRpt extends javax.swing.JPanel {
                             .addComponent(tbpo))))
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel10)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tbrmks, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(33, 33, 33)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
@@ -1250,13 +1257,18 @@ public class OrderRpt extends javax.swing.JPanel {
                                 .addComponent(cbbackorder)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(cberror)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(cbcancel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cbcancel))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btdetail)))))
+                                .addComponent(cbmodified))
+                            .addComponent(btdetail)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel10)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tbrmks, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -1286,7 +1298,8 @@ public class OrderRpt extends javax.swing.JPanel {
                         .addComponent(cbopen)
                         .addComponent(cbbackorder)
                         .addComponent(cberror)
-                        .addComponent(cbcancel))
+                        .addComponent(cbcancel)
+                        .addComponent(cbmodified))
                     .addComponent(dcTo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1507,6 +1520,7 @@ public class OrderRpt extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbcancel;
     private javax.swing.JCheckBox cbclose;
     private javax.swing.JCheckBox cberror;
+    private javax.swing.JCheckBox cbmodified;
     private javax.swing.JCheckBox cbopen;
     private com.toedter.calendar.JDateChooser dcFrom;
     private com.toedter.calendar.JDateChooser dcTo;
