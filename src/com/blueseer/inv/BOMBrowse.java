@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.inv; 
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.ord.*;
 import com.blueseer.utl.OVData;
 import java.awt.Color;
@@ -75,18 +76,25 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.prd.prdData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.sql.Connection;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -94,6 +102,13 @@ import javax.swing.JTabbedPane;
  */
 public class BOMBrowse extends javax.swing.JPanel {
  
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    
+    
      MyTableModel mymodel = new BOMBrowse.MyTableModel(new Object[][]{},
                         new String[]{
                             getGlobalColumnTag("select"), 
@@ -176,6 +191,77 @@ public class BOMBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+           
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
         JTabbedPane tabpane = null;
@@ -220,26 +306,174 @@ public class BOMBrowse extends javax.swing.JPanel {
        }
     }
     
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
     
     public void initvars(String[] arg) {
+          executeTask("dataInit", null);      
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "items");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
         mymodel.setRowCount(0);
         java.util.Date now = new java.util.Date();
         tableorder.getTableHeader().setReorderingAllowed(false);
         ddfromitem.removeAllItems();
         ddtoitem.removeAllItems(); 
         cbdefault.setSelected(true);
-        ArrayList items = invData.getItemMasterAlllist();
-        for (int i = 0; i < items.size(); i++) {
-            ddfromitem.addItem(items.get(i));
+        
+        ddfromitem.removeAllItems();
+        ddtoitem.removeAllItems();
+        
+        
+        for (String[] s : initDataSets) {
+                       
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("items")) {
+              ddfromitem.addItem(s[1]); 
+              ddtoitem.addItem(s[1]);
+            }
         }
-        for (int i = 0; i < items.size(); i++) {
-            ddtoitem.addItem(items.get(i));
-        } 
+        
+        ddfromitem.insertItemAt("", 0);
+        ddtoitem.insertItemAt("", 0);
+        ddfromitem.setSelectedIndex(0);
         ddtoitem.setSelectedIndex(ddtoitem.getItemCount() - 1);
-      
-        
-        
+       
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String fromitem;
+        String toitem;
+        String fromserial = "";
+        String toserial = "";
+        
+        if (ddfromitem.getSelectedItem() == null || ddfromitem.getSelectedItem().toString().isEmpty()) {
+                    fromitem = bsmf.MainFrame.lowchar;
+        } else {
+            fromitem = ddfromitem.getSelectedItem().toString();
+        }
+         if (ddtoitem.getSelectedItem() == null || ddtoitem.getSelectedItem().toString().isEmpty()) {
+            toitem = bsmf.MainFrame.hichar;
+        } else {
+            toitem = ddtoitem.getSelectedItem().toString();
+        }
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getBOMBrowseView"});
+        list.add(new String[]{"param1",fromitem});
+        list.add(new String[]{"param2",toitem});
+        list.add(new String[]{"param3",BlueSeerUtils.boolToString(cbdefault.isSelected())});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getBOMBrowseView")};
+            }
+        } else {
+            jsonString = invData.getBOMBrowseView(new String[]{
+                fromitem,
+                toitem,
+                BlueSeerUtils.boolToString(cbdefault.isSelected())
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getBOMBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                i++;
+                mymodel.addRow(rowData);
+            }
+            labelcount.setText(String.valueOf(i));        
+        } 
+        roData = null;
+    }   
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -421,103 +655,9 @@ public class BOMBrowse extends javax.swing.JPanel {
     }//GEN-LAST:event_tableorderMouseClicked
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-        try {
-            Connection con = DriverManager.getConnection(url + db, user, pass);
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String fromitem = "";
-                String toitem = "";
-                
-
-                if (ddfromitem.getSelectedItem() == null || ddfromitem.getSelectedItem().toString().isEmpty()) {
-                    fromitem = bsmf.MainFrame.lowchar;
-                } else {
-                    fromitem = ddfromitem.getSelectedItem().toString();
-                }
-                if (ddtoitem.getSelectedItem() == null || ddtoitem.getSelectedItem().toString().isEmpty()) {
-                    toitem = bsmf.MainFrame.hichar;
-                } else {
-                    toitem = ddtoitem.getSelectedItem().toString();
-                }
-
-                //  ScrapReportPanel.MyTableModel mymodel = new ScrapReportPanel.MyTableModel(new Object[][]{},
-                    //         new String[]{"Acct", "Description", "Amt"});
-                // tablescrap.setModel(mymodel);
-
-                mymodel.setNumRows(0);
-
-                tableorder.setModel(mymodel);
-                // tableorder.getColumnModel().getColumn(0).setCellRenderer(new OrderReport1.SomeRenderer());
-                //  tableorder.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                Enumeration<TableColumn> en = tableorder.getColumnModel().getColumns();
-                while (en.hasMoreElements()) {
-                    TableColumn tc = en.nextElement();
-                    if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                    tc.setCellRenderer(new BOMBrowse.SomeRenderer());
-                }
-                // TableColumnModel tcm = tablescrap.getColumnModel();
-                // tcm.getColumn(3).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-
-                //   tableorder.getColumnModel().getColumn(0).setCellRenderer(new OrderReport1.ButtonRenderer());
-                tableorder.getColumnModel().getColumn(0).setMaxWidth(100);
-
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                
-                if (cbdefault.isSelected()) {
-                 res = st.executeQuery("SELECT ps_parent, ps_bom, it_desc, ps_op, ps_child, ps_qty_per, ps_ref " +
-                    " FROM  pbm_mstr " +
-                    " inner join bom_mstr on bom_id = ps_bom and bom_primary = '1' " +     
-                    " inner join item_mstr on it_item = ps_parent " +
-                    " where ps_parent >= " + "'" + fromitem + "'" +
-                    " AND ps_parent <= " + "'" + toitem + "'" +
-                    " order by ps_parent, ps_op ;");   
-                } else {
-                res = st.executeQuery("SELECT ps_parent, ps_bom, it_desc, ps_op, ps_child, ps_qty_per, ps_ref " +
-                    " FROM  pbm_mstr " +
-                    " inner join bom_mstr on bom_id = ps_bom " +     
-                    " inner join item_mstr on it_item = ps_parent " +
-                    " where ps_parent >= " + "'" + fromitem + "'" +
-                    " AND ps_parent <= " + "'" + toitem + "'" +
-                    " order by ps_parent, ps_op ;");
-                }
-                while (res.next()) {
-                   
-                    i++;
-                    mymodel.addRow(new Object[]{
-                        BlueSeerUtils.clickflag,
-                        res.getString("ps_parent"),
-                        res.getString("ps_bom"), 
-                        res.getString("it_desc"),
-                        res.getString("ps_op"),
-                        res.getString("ps_child"),
-                        res.getString("ps_qty_per"),
-                        res.getString("ps_ref")
-                    });
-                }
-               
-                labelcount.setText(String.valueOf(i));
-               
-            } catch (SQLException s) {
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-                MainFrame.bslog(s);
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
 

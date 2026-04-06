@@ -47,6 +47,8 @@ import static com.blueseer.frt.frtData.deleteDriverMstr;
 import com.blueseer.frt.frtData.drv_mstr;
 import com.blueseer.frt.frtData.frt_ctrl;
 import static com.blueseer.frt.frtData.getBrokerMstr;
+import static com.blueseer.frt.frtData.getCFOBrowseView;
+import static com.blueseer.frt.frtData.getCFOBrowseViewDet;
 import static com.blueseer.frt.frtData.getCFOCtrl;
 import static com.blueseer.frt.frtData.getCFODet;
 import static com.blueseer.frt.frtData.getCFOLines;
@@ -451,6 +453,25 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         }
 
+    case "getCFOBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4"), 
+               request.getHeader("param5"), 
+               request.getHeader("param6"),
+               request.getHeader("param7"),
+               request.getHeader("param8")
+               };     
+        response.getWriter().print(getCFOBrowseView(it));  
+        break;
+        } 
+       
+    case "getCFOBrowseViewDet" : {
+        response.getWriter().print(getCFOBrowseViewDet(request.getHeader("param1"), request.getHeader("param2")));  
+        break;
+    } 
         
         
         default:

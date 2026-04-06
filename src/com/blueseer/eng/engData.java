@@ -34,6 +34,7 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -42,6 +43,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import org.json.JSONArray;
 
 /**
  *
@@ -812,8 +814,7 @@ public class engData {
         }
     return m;
     }
-    
-    
+        
     public static task_mstr getTaskMstr(String[] x) {
         task_mstr r = null;
         String[] m = new String[2];
@@ -828,7 +829,14 @@ public class engData {
                 } else {
                     while(res.next()) {
                         m = new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess};
-                        r = new task_mstr(m, res.getString("task_id"), res.getString("task_desc"));
+                        r = new task_mstr(m, res.getString("task_id"), 
+                                res.getString("task_desc"),
+                                res.getString("task_class"),
+                                res.getString("task_creator"),
+                                res.getString("task_date_create"),
+                                res.getString("task_date_mod"),
+                                res.getString("task_status"),
+                                res.getString("task_comments"));
                     }
                 }
             }
@@ -896,7 +904,6 @@ public class engData {
         return r;
     }
         
-    
     public static String[] deleteTaskMstr(task_mstr x) {
         String[] m = new String[2];
         if (x == null) {
@@ -974,6 +981,192 @@ public class engData {
      
     
     // misc
+    public static String getECNBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                res = st.executeQuery("select ecn_nbr, ecn_item, ecn_poc, ecn_status, ecn_createdate, ecn_mstrtask, ecn_targetdate " +
+                          " from ecn_mstr where " +
+                        " ecn_createdate >= " + "'" + keys[0] + "'" + " AND " +
+                        " ecn_createdate <= " + "'" + keys[1] + "'" +
+                        " order by ecn_nbr desc;");
+                    while (res.next()) {                  
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("ecn_nbr"));
+                        rowArray.put(res.getString("ecn_mstrtask"));
+                        rowArray.put(res.getString("ecn_poc"));
+                        rowArray.put(res.getString("ecn_item"));
+                        rowArray.put(res.getString("ecn_status"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getECNBrowseViewDet(String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                res = st.executeQuery("select ecnt_seq, ecnt_owner, ecnt_task, ecnt_assigndate, ecnt_closedate, ecnt_status from ecn_task " +
+                        " where ecnt_nbr = " + "'" + key + "'" +  ";");
+                    while (res.next()) {                       
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("ecnt_seq"));
+                        rowArray.put(res.getString("ecnt_owner"));
+                        rowArray.put(res.getString("ecnt_task"));
+                        rowArray.put(res.getString("ecnt_assigndate"));
+                        rowArray.put(res.getString("ecnt_closedate"));
+                        rowArray.put(res.getString("ecnt_status"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    public static String getTaskBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                res = st.executeQuery("select task_id, task_desc, task_class, task_creator, task_date_mod, task_status " +
+                          " from task_mstr where " +
+                        " task_date_create >= " + "'" + keys[0] + "'" + " AND " +
+                        " task_date_create <= " + "'" + keys[1] + "'" +
+                        " order by task_id desc;");
+                    while (res.next()) {     
+                        
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("task_id"));
+                        rowArray.put(res.getString("task_desc"));
+                        rowArray.put(res.getString("task_class"));
+                        rowArray.put(res.getString("task_creator"));
+                        rowArray.put(res.getString("task_date_mod"));
+                        rowArray.put(res.getString("task_status"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getTaskBrowseViewDet(String key) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                res = st.executeQuery("select taskd_id, taskd_owner, taskd_desc, taskd_sequence, taskd_enabled from task_det " +
+                        " where taskd_id = " + "'" + key + "'" +  ";");
+                    while (res.next()) {        
+                       
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("taskd_sequence"));
+                        rowArray.put(res.getString("taskd_owner"));
+                        rowArray.put(res.getString("taskd_desc"));
+                        rowArray.put(res.getString("taskd_enabled"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    
     public static ArrayList<String> getECNSequences(String nbr) {
         ArrayList<String> lines = new ArrayList<String>();
         try{
@@ -1094,9 +1287,10 @@ public class engData {
     }
     
     
-    public record task_mstr(String[] m, String task_id, String task_desc) {
+    public record task_mstr(String[] m, String task_id, String task_desc, String task_class, String task_creator,
+        String task_date_create, String task_date_mod, String task_status, String task_comments) {
         public task_mstr(String[] m) {
-            this(m, "", "");
+            this(m, "", "", "", "", "", "", "", "");
         }
     }
     

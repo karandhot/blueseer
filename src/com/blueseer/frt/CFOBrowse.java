@@ -28,6 +28,7 @@ package com.blueseer.frt;
 
 import com.blueseer.pur.*;
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import com.blueseer.utl.OVData;
 import com.blueseer.utl.BlueSeerUtils;
 import static bsmf.MainFrame.checkperms;
@@ -54,27 +55,36 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import com.blueseer.ctr.cusData;
 import static com.blueseer.frt.CFOMaint.fc;
+import static com.blueseer.frt.frtData.getCFOBrowseViewDet;
 import static com.blueseer.frt.frtData.getCFOCtrl;
+import com.blueseer.inv.invData;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.vdr.venData;
+import java.io.IOException;
 import java.sql.Connection;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -84,6 +94,12 @@ import javax.swing.table.TableColumn;
  */
 public class CFOBrowse extends javax.swing.JPanel {
  
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    
      public Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
      
      boolean carrierPOV = true;                     
@@ -201,62 +217,138 @@ public class CFOBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    public void getdetail(String cfo, String revision) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double total = 0;
-        
-        try {
-
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select cfod_nbr, cfod_stopline, cfod_type, cfod_date, cfod_datetype, cfod_name, cfod_line1, cfod_city, cfod_state, cfod_zip from cfo_det " +
-                        " where cfod_nbr = " + "'" + cfo + "'" +
-                        " and cfod_revision = " + "'" + revision + "'" +  ";");
-                while (res.next()) {
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("cfod_stopline"),
-                      res.getString("cfod_type"),
-                      res.getString("cfod_datetype"),
-                      res.getString("cfod_date"),
-                      res.getString("cfod_name"),
-                      res.getString("cfod_line1"),
-                      res.getString("cfod_city"),
-                      res.getString("cfod_state"),
-                      res.getString("cfod_zip")});
-                }
-               
-              
-                tabledetail.setModel(modeldetail);
-              //   tabledetail.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                
+                case "getBrowseViewDet":
+                message = getBrowseViewDet(key[0], key[1]);
+                break;
+                                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
+    
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -303,11 +395,25 @@ public class CFOBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
+        executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = frtData.getCFOInit(this.getClass().getName(), bsmf.MainFrame.userid);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
+        java.util.Date now = new java.util.Date();
         lblamttot.setText("0");
         lbllines.setText("0");
         labeldettotal.setText("");
         
-        java.util.Date now = new java.util.Date();
         Calendar cal = new GregorianCalendar();
        // cal.set(Calendar.DAY_OF_YEAR, 1);
         cal.set(Calendar.DATE, -30);
@@ -315,21 +421,8 @@ public class CFOBrowse extends javax.swing.JPanel {
         
       //  dcfrom.setDate(firstday);
         dcfromdate.setDate(fromdate);
-        dctodate.setDate(now);
-        
-        fc = getCFOCtrl(null);
-       // note:  fc.frtc_function() = 1 for Trucking POV...and 0 for Customer POV
-       carrierPOV = (fc.frtc_function().equals("1"));
-       if (carrierPOV) {
-          
-           fromkeypartner.setText("From Customer");
-           tokeypartner.setText("To Customer");
-       } else {
-          
-           fromkeypartner.setText("From Carrier");
-           tokeypartner.setText("To Carrier");
-       }
-        
+        dctodate.setDate(now); 
+       
        
         
         mymodel.setNumRows(0);
@@ -337,50 +430,55 @@ public class CFOBrowse extends javax.swing.JPanel {
         tablereport.setModel(mymodel);
         tabledetail.setModel(modeldetail);
         
-         
-         
+       tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+       tablereport.getColumnModel().getColumn(1).setMaxWidth(100);
        
-          
-         
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
-        
-        
+       
         
         btdetail.setEnabled(false);
-        detailpanel.setVisible(false);
+        detailpanel.setVisible(false); 
         
         ddsite.removeAllItems();
-        ArrayList sites = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (Object site : sites) {
-            ddsite.addItem(site);
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSiteForUserid(bsmf.MainFrame.userid));
-        
         ddcustfrom.removeAllItems();
         ddcustto.removeAllItems();
-        ArrayList<String> partners = new ArrayList<String>();
-        if (carrierPOV) {
-            partners = cusData.getcustmstrlist();
-        } else {
-            partners = OVData.getfreightlist();
-        }
-        for (Object p : partners) {
-            ddcustfrom.addItem(p);
-        }
-        ddcustto.removeAllItems();
-        for (Object p : partners) {
-            ddcustto.addItem(p);
-        }
         
-        if (ddcustfrom.getItemCount() > 0)
-        ddcustfrom.setSelectedIndex(0);
+        for (String[] s : initDataSets) {
+            
+            if (s[0].equals("pov")) {
+              carrierPOV = BlueSeerUtils.ConvertStringToBool(s[1]); 
+            }
+            
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("customers")) {
+              ddcustfrom.addItem(s[1]); 
+              ddcustto.addItem(s[1]);
+            }
+        }
+        if (ddsite.getItemCount() > 0) {
+            ddsite.setSelectedItem(defaultSite);
+        }
         
         if (ddcustto.getItemCount() > 0)
         ddcustto.setSelectedIndex(ddcustto.getItemCount() - 1);
-        
-        ddstatus.removeAllItems();
+       
+       if (carrierPOV) {          
+           fromkeypartner.setText("From Customer");
+           tokeypartner.setText("To Customer");
+       } else {          
+           fromkeypartner.setText("From Carrier");
+           tokeypartner.setText("To Carrier");
+       }
+       
+       ddstatus.removeAllItems();
         ddstatus.addItem("");
         ddstatus.addItem("pending");
         ddstatus.addItem("accepted");
@@ -391,8 +489,118 @@ public class CFOBrowse extends javax.swing.JPanel {
         ddstatus.addItem("closed");
         ddstatus.setSelectedIndex(0);
         
-          
+        
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getCFOBrowseView"});
+        list.add(new String[]{"param1",dddatetype.getSelectedItem().toString()});
+        list.add(new String[]{"param2",BlueSeerUtils.boolToString(carrierPOV)});
+        list.add(new String[]{"param3",ddcustfrom.getSelectedItem().toString()});
+        list.add(new String[]{"param4",ddcustto.getSelectedItem().toString()});
+        list.add(new String[]{"param5",dfdate.format(dcfromdate.getDate())});
+        list.add(new String[]{"param6",dfdate.format(dctodate.getDate())});
+        list.add(new String[]{"param7",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"param8",ddstatus.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServINV"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getCFOBrowseView")};
+            }
+        } else {
+            jsonString = frtData.getCFOBrowseView(new String[]{
+                dddatetype.getSelectedItem().toString(),
+                BlueSeerUtils.boolToString(carrierPOV),
+                ddcustfrom.getSelectedItem().toString(),
+                ddcustto.getSelectedItem().toString(),
+                dfdate.format(dcfromdate.getDate()),
+                dfdate.format(dctodate.getDate()),
+                ddsite.getSelectedItem().toString(),
+                ddstatus.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getCFOBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        double dol = 0.0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            
+            if (! tbcustfonbr.getText().isBlank() && ! roData[i][7].toString().contains(tbcustfonbr.getText())) {
+                continue;
+            }
+            
+            roData[i][11] = bsParseDouble(roData[i][11].toString());
+            dol += bsParseDouble(roData[i][11].toString());
+            i++;
+            mymodel.addRow(rowData);
+        }
+        lblamttot.setText(String.valueOf(currformatDouble(dol)));
+        lbllines.setText(bsNumber(i));
+        
+        }          
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String cfo, String revision) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getCFOBrowseViewDet"});
+            list.add(new String[]{"param1", cfo});
+            list.add(new String[]{"param2", revision});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServFRT"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getCFOBrowseViewDet(cfo, revision); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet() {
+      modeldetail.setNumRows(0);
+       //  double totalsales = 0;
+      //   double totalqty = 0;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+               // totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+               // totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                modeldetail.addRow(rowData);
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -699,9 +907,11 @@ public class CFOBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
+    mymodel.setNumRows(0);
+    setPanelComponentState(this, false);
+    executeTask("getBrowseView", null);
+    /*
+    try {
             Connection con = null;
         if (ds != null) {
           con = ds.getConnection();
@@ -975,7 +1185,7 @@ try {
         } catch (Exception e) {
             MainFrame.bslog(e);
         }
-       
+       */
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -989,7 +1199,7 @@ try {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(tablereport.getValueAt(row, 2).toString(), tablereport.getValueAt(row, 3).toString() );
+                executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 2).toString(), tablereport.getValueAt(row, 3).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
               

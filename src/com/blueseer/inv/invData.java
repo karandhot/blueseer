@@ -3481,6 +3481,69 @@ public class invData {
    
 
     /* misc functions */
+    
+    public static String getBOMBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[2].equals("1")) {
+                 res = st.executeQuery("SELECT ps_parent, ps_bom, it_desc, ps_op, ps_child, ps_qty_per, ps_ref " +
+                    " FROM  pbm_mstr " +
+                    " inner join bom_mstr on bom_id = ps_bom and bom_primary = '1' " +     
+                    " inner join item_mstr on it_item = ps_parent " +
+                    " where ps_parent >= " + "'" + keys[0] + "'" +
+                    " AND ps_parent <= " + "'" + keys[1] + "'" +
+                    " order by ps_parent, ps_op ;");   
+                } else {
+                res = st.executeQuery("SELECT ps_parent, ps_bom, it_desc, ps_op, ps_child, ps_qty_per, ps_ref " +
+                    " FROM  pbm_mstr " +
+                    " inner join bom_mstr on bom_id = ps_bom " +     
+                    " inner join item_mstr on it_item = ps_parent " +
+                    " where ps_parent >= " + "'" + keys[0] + "'" +
+                    " AND ps_parent <= " + "'" + keys[1] + "'" +
+                    " order by ps_parent, ps_op ;");
+                }
+                    while (res.next()) {                  
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("ps_parent"));
+                        rowArray.put(res.getString("ps_bom"));
+                        rowArray.put(res.getString("it_desc"));
+                        rowArray.put(res.getString("ps_op"));
+                        rowArray.put(res.getString("ps_child"));
+                        rowArray.put(res.getString("ps_qty_per"));
+                        rowArray.put(res.getString("ps_ref"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    
     public static boolean isBOMUnique(String bom, String item, String routing) {
        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
             ArrayList<String[]> list = new ArrayList<String[]>();

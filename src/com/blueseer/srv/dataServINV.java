@@ -51,6 +51,7 @@ import static com.blueseer.inv.invData.deleteUOMMstr;
 import static com.blueseer.inv.invData.deleteWareHouseMstr;
 import static com.blueseer.inv.invData.deleteWorkCenterMstr;
 import static com.blueseer.inv.invData.deleteZeroInventoryRecs;
+import static com.blueseer.inv.invData.getBOMBrowseView;
 import static com.blueseer.inv.invData.getBOMInit;
 import static com.blueseer.inv.invData.getBOMMstr;
 import static com.blueseer.inv.invData.getBOMParentOpElements;
@@ -862,6 +863,16 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param3"),
                     request.getHeader("param4"))));
             break;  
+        }
+        
+        case "getBOMBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3")
+               };     
+        response.getWriter().print(getBOMBrowseView(it));  
+        break;
         }
         
         case "getItemBrowseView" : {

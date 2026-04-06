@@ -26,6 +26,10 @@ SOFTWARE.
 package com.blueseer.srv;
 
 
+import static com.blueseer.eng.engData.getECNBrowseView;
+import static com.blueseer.eng.engData.getECNBrowseViewDet;
+import static com.blueseer.eng.engData.getTaskBrowseView;
+import static com.blueseer.eng.engData.getTaskBrowseViewDet;
 import static com.blueseer.utl.BlueSeerUtils.confirmServerAuthAPI;
 import java.io.IOException;
 import java.util.Enumeration;
@@ -70,6 +74,33 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
     
     switch (id) {
         
+    case "getECNBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2")
+               };     
+        response.getWriter().print(getECNBrowseView(it));  
+        break;
+        } 
+       
+    case "getECNBrowseViewDet" : {
+        response.getWriter().print(getECNBrowseViewDet(request.getHeader("param1")));  
+        break;
+    } 
+    
+    case "getTaskBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2")
+               };     
+        response.getWriter().print(getTaskBrowseView(it));  
+        break;
+        } 
+       
+    case "getTaskBrowseViewDet" : {
+        response.getWriter().print(getTaskBrowseViewDet(request.getHeader("param1")));  
+        break;
+    } 
      
         
         

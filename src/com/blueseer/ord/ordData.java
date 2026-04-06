@@ -7265,12 +7265,14 @@ public class ordData {
                  " update so_mstr set so_due_date = " + "'" + duedate + "'" + "," +
                  " so_mod_date = " + "'" + now + "'" +
                  " where so_po = " + "'" + po + "'" + ";" );
-           for (String[] det : detlist) { // line, qty, listprice
+           for (String[] det : detlist) { // custline, item, custitem, qty, listprice
                st.executeUpdate(
-                 " update sod_det set sod_ord_qty = " + "'" + det[1] + "'" + "," +
-                 " sod_listprice = " + "'" + det[2] + "'" +
+                 " update sod_det set sod_ord_qty = " + "'" + det[3] + "'" + "," +
+                 " sod_listprice = " + "'" + det[4] + "'" + "," +
+                 " sod_item = " + "'" + det[1] + "'" + "," +
+                 " sod_custitem = " + "'" + det[2] + "'" +         
                  " where sod_po = " + "'" + po + "'" +
-                 " and sod_item = " + "'" + det[0] + "'" + ";" );
+                 " and sod_custline = " + "'" + det[0] + "'" + ";" );
            }
         }
         catch (SQLException s){

@@ -74,6 +74,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -438,9 +440,17 @@ public class TaskMaint extends javax.swing.JPanel implements IBlueSeerT {
     }
     
     public task_mstr createRecord() { 
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         task_mstr x = new task_mstr(null, 
                 tbkey.getText(),
-                tbdesc.getText()
+                tbdesc.getText(),
+                "",
+                bsmf.MainFrame.userid,
+                dfdate.format(now),
+                dfdate.format(now),
+                "",
+                ""
                 );
         return x;
     }

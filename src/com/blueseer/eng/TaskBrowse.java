@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.eng;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.checkperms;
 import static bsmf.MainFrame.db;
 import java.awt.Color;
@@ -64,20 +65,28 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import static com.blueseer.eng.engData.getTaskBrowseViewDet;
+import static com.blueseer.prd.prdData.getSerialBrowseViewDet;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Enumeration;
 import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -87,6 +96,11 @@ import javax.swing.table.TableColumn;
  */
 public class TaskBrowse extends javax.swing.JPanel {
  
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{getGlobalColumnTag("select"), 
@@ -177,57 +191,139 @@ public class TaskBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-     public void getdetail(String nbr) {
+     public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double lines = 0.00;
-        try {
-
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select taskd_id, taskd_owner, taskd_desc, taskd_sequence, taskd_enabled from task_det " +
-                        " where taskd_id = " + "'" + nbr + "'" +  ";");
-                while (res.next()) {
-                    lines = lines + 1;
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("taskd_sequence"), 
-                      res.getString("taskd_owner"),
-                      res.getString("taskd_desc"),
-                      res.getString("taskd_enabled")});
-                }
-               
-               
-                tabledetail.setModel(modeldetail);
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break; 
+                    
+                case "getBrowseViewDet":
+                    message = getBrowseViewDet(key[0]);
+                    break;     
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+            
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
-    
   
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
+    
      
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -274,8 +370,20 @@ public class TaskBrowse extends javax.swing.JPanel {
     }
      
     public void initvars(String[] arg) {
-       
-        
+       executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
         
         java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
@@ -289,18 +397,132 @@ public class TaskBrowse extends javax.swing.JPanel {
         modeldetail.setNumRows(0);
         tablereport.setModel(mymodel);
         tabledetail.setModel(modeldetail);
-        
-      
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-        
-        
-        
-        
         btdetail.setEnabled(false);
-        detailpanel.setVisible(false);
-          
+        detailpanel.setVisible(false);          
+        
+        for (String[] s : initDataSets) {
+           
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+           
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+           
+        }
+        
+        mymodel.setNumRows(0);
+        tablereport.setModel(mymodel);
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        tablereport.getColumnModel().getColumn(1).setMaxWidth(100);  
+
+         Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+         while (en.hasMoreElements()) {
+             TableColumn tc = en.nextElement();
+             if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                 continue;
+             }
+             tc.setCellRenderer(new TaskBrowse.SomeRenderer());
+         } 
+       
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        String fromitem;
+        String toitem;
+        String fromserial = "";
+        String toserial = "";
+        
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getTaskBrowseView"});
+        list.add(new String[]{"fromdate",dfdate.format(dcfrom.getDate())});
+        list.add(new String[]{"todate",dfdate.format(dcto.getDate())});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServENG"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getTaskBrowseView")};
+            }
+        } else {
+            jsonString = engData.getTaskBrowseView(new String[]{
+                dfdate.format(dcfrom.getDate()),
+                dfdate.format(dcto.getDate())
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getECNBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        mymodel.setNumRows(0);
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            if (roData[i][3].toString().isBlank()) {
+                        continue;
+            }
+            i++;
+            mymodel.addRow(rowData);
+        }
+        tbtotqty.setText(String.valueOf(i));
+        }          
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String serial) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getTaskBrowseViewDet"});
+            list.add(new String[]{"param1", serial});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServENG"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getTaskBrowseViewDet(serial); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet() {
+      modeldetail.setNumRows(0);
+       //  double totalsales = 0;
+      //   double totalqty = 0;
+         
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+               // totalsales = totalsales + (bsParseDouble(rowData[6].toString()) * bsParseDouble(rowData[7].toString()));
+               // totalqty = totalqty + bsParseDouble(rowData[6].toString());
+                modeldetail.addRow(rowData);
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -517,98 +739,9 @@ public class TaskBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
-            Connection con = null;
-        if (ds != null) {
-          con = ds.getConnection();
-        } else {
-          con = DriverManager.getConnection(url + db, user, pass);  
-        }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                DecimalFormat df = new DecimalFormat("#0.00", new DecimalFormatSymbols(Locale.US));
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                String fromdate = "";
-                String todate = "";
-                 
-              
-                
-                 double totsales = 0.00;
-                 int totqty = 0;
-                 
-            
-                // String site = ddsite.getSelectedItem().toString(); 
-                                  
-             
-                 String status = "";
-                
-               
-                 if (dcfrom.getDate() == null) {
-                     fromdate = bsmf.MainFrame.lowdate;
-                 } else {
-                     fromdate = dfdate.format(dcfrom.getDate());
-                 }
-                 if (dcto.getDate() == null) {
-                     todate = bsmf.MainFrame.hidate;
-                 } else {
-                    todate = dfdate.format(dcto.getDate()); 
-                 }
-                
-                 mymodel.setNumRows(0);
-                tablereport.setModel(mymodel);
-                tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-                tablereport.getColumnModel().getColumn(1).setMaxWidth(100);  
-                
-                 Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new SomeRenderer());
-                 } 
-                 
-                 res = st.executeQuery("select task_id, task_desc, task_class, task_creator, task_date_mod, task_status " +
-                          " from task_mstr  " +
-                        " order by task_id desc;");
-                 
-                
-                       while (res.next()) {
-                     
-                         totqty = totqty + 1;
-                         
-                         mymodel.addRow(new Object[]{BlueSeerUtils.clickflag,
-                            BlueSeerUtils.clickbasket, 
-                               res.getString("task_id"),
-                               res.getString("task_desc"),
-                               res.getString("task_class"),
-                               res.getString("task_creator"),
-                               res.getString("task_date_mod"),
-                               res.getString("task_status")
-                            });
-                         tbtotqty.setText(String.valueOf(totqty));       
-                       }
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -621,7 +754,7 @@ try {
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 1) {
-                getdetail(tablereport.getValueAt(row, 2).toString());
+                executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 2).toString()});
                 btdetail.setEnabled(true);
                 detailpanel.setVisible(true);
         }

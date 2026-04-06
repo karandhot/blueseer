@@ -37,6 +37,7 @@ import static com.blueseer.adm.admData.addChangeLog;
 import com.blueseer.edi.EDI;
 import static com.blueseer.shp.shpData.addUpdateShipMeta;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToArrayListString;
@@ -56,6 +57,8 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import org.json.JSONArray;
 
 /**
  *
@@ -3073,6 +3076,368 @@ public class frtData {
     
     
     // misc
+    public static ArrayList<String[]> getCFOInit(String panelClassName, String userid) {
+        
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<String[]>();
+            list.add(new String[]{"id", "getCFOInit"});
+            list.add(new String[]{"param1", panelClassName});
+             list.add(new String[]{"param2", userid});
+            try {
+                return jsonToArrayListStringArray(sendServerPost(list, "", null, "dataServFRT"));
+            } catch (IOException ex) {
+                bslog(ex);
+                return null;
+            }
+        } 
+        
+        String[] sites = null;
+        boolean allsites = false;
+        ArrayList<String[]> lines = new ArrayList<String[]>();
+        try{
+        Connection con = null;
+        if (ds != null) {
+          con = ds.getConnection();
+        } else {
+          con = DriverManager.getConnection(url + db, user, pass);  
+        }
+        Statement st = con.createStatement();
+        ResultSet res = null;
+        try{
+        // allocate, custitemonly, site, currency, sites, currencies, uoms, 
+        // states, warehouses, locations, customers, taxcodes, carriers, statuses   
+                    
+            res = st.executeQuery("select user_allowedsites from user_mstr where user_id = " + "'" + userid + "'" + ";");
+            while (res.next()) {
+              if (res.getString("user_allowedsites").equals("*")) {
+                  allsites = true;
+              } else {
+                  sites = res.getString("user_allowedsites").split(",");
+              }
+            }
+            
+            res = st.executeQuery("select perm_readonly from perm_mstr inner join menu_mstr on menu_id = perm_menu where perm_user = " + "'" + userid + "'" + 
+                    " AND menu_panel = " + "'" + panelClassName + "'" +
+                    ";");
+           while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "canupdate";
+               s[1] = "0";
+               if (res.getString("perm_readonly").equals("0")) {
+                 s[1] = "1";
+               }
+               
+               lines.add(s);
+           }
+           
+           String conditionalsite = "";
+           res = st.executeQuery("select user_allowedsites, user_site from  " +
+                        "  user_mstr where user_id = " + "'" + userid + "'" + ";" );
+               while (res.next()) {
+                    if (res.getString("user_allowedsites").equals("*")) {
+                      conditionalsite = "all";
+                    } else {
+                      conditionalsite = res.getString("user_site");
+                    }
+               }
+               String[] sx = new String[2];
+               sx[0] = "conditionalsite";
+               sx[1] = conditionalsite;
+               lines.add(sx);
+               
+             
+            res = st.executeQuery("select site_site from site_mstr;");
+            while (res.next()) {
+               if (allsites || Arrays.stream(sites).anyMatch(res.getString("site_site")::equals)) {
+                 String[] s = new String[2];
+                 s[0] = "sites";
+                 s[1] = res.getString("site_site");
+                 lines.add(s);
+               }
+            }
+            
+            res = st.executeQuery("select ov_site, ov_currency from ov_mstr;" );
+            while (res.next()) {
+               String[] s = new String[2];
+               s[0] = "currency";
+               s[1] = res.getString("ov_currency");
+               lines.add(s);
+               s = new String[2];
+               s[0] = "site";
+               s[1] = res.getString("ov_site");
+               lines.add(s);
+            }
+            
+            res = st.executeQuery("select * from ov_ctrl;" );
+            while (res.next()) {
+               lines.add(new String[]{"jasperdir", res.getString("ov_jasper_directory")});
+               lines.add(new String[]{"imagedir", res.getString("ov_image_directory")});
+               lines.add(new String[]{"tempdir", res.getString("ov_temp_directory")});
+               lines.add(new String[]{"labeldir", res.getString("ov_label_directory")});
+               lines.add(new String[]{"edidir", res.getString("ov_edi_directory")});
+            }
+            
+            boolean isCarrierPOV = false;
+            res = st.executeQuery("select * from frt_ctrl ;");
+            while (res.next()) {
+                String[] s = new String[2];
+               s[0] = "pov";
+               s[1] = res.getString("frtc_function");
+               lines.add(s);
+               if (res.getString("frtc_function").equals("1")) {
+                   isCarrierPOV = true;
+               }
+            }
+            
+            if (isCarrierPOV) {
+                res = st.executeQuery("select cm_code from cm_mstr;");
+                while (res.next()) {
+                    String[] s = new String[2];
+                   s[0] = "customers";
+                   s[1] = res.getString("cm_code");
+                   lines.add(s);
+                }
+            } else {
+                res = st.executeQuery("select car_id from car_mstr;");
+                while (res.next()) {
+                    String[] s = new String[2];
+                   s[0] = "customers";
+                   s[1] = res.getString("car_id");
+                   lines.add(s);
+                } 
+            }
+            
+            
+            
+            
+        }
+        catch (SQLException s){
+             MainFrame.bslog(s);
+        } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+        }
+    }
+    catch (Exception e){
+        MainFrame.bslog(e);
+    }
+        return lines;
+    }
+    
+    public static String getCFOBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                if (keys[0].equals("Create Date")) {
+             if (! keys[7].isBlank()) {    // status
+             
+                if (keys[1].equals("1")) { // CarrierPOV
+                res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name " +
+                         " from cfo_mstr inner join cm_mstr on cm_code = cfo_cust where " +
+                        " cfo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " cfo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " cfo_orddate >= " + "'" + keys[4] + "'" + " AND " +
+                        " cfo_orddate <= " + "'" + keys[5] + "'" + " AND " +         
+                        " cfo_site = " + "'" + keys[6] + "'" + " AND " +        
+                        " cfo_orderstatus = " + "'" + keys[7] + "'" +
+                        " order by cfo_nbr ;");
+                } else {
+                    res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, car_name " +
+                         " from cfo_mstr inner join car_mstr on car_id = cfo_cust where " +
+                        " cfo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " cfo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " cfo_orddate >= " + "'" + keys[4] + "'" + " AND " + 
+                        " cfo_orddate <= " + "'" + keys[5] + "'" + " AND " +           
+                        " cfo_site = " + "'" + keys[6] + "'" + " AND " +        
+                        " cfo_orderstatus = " + "'" + keys[7] + "'" +
+                        " order by cfo_nbr ;");
+                }
+             } else {
+                 
+                if (keys[1].equals("1")) {  
+                res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name " +
+                         " from cfo_mstr inner join cm_mstr on cm_code = cfo_cust where " +
+                        " cfo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " cfo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " cfo_orddate >= " + "'" + keys[4] + "'" + " AND " + 
+                        " cfo_orddate <= " + "'" + keys[5] + "'" + " AND " +           
+                        " cfo_site = " + "'" + keys[6] + "'" + " AND " + 
+                        " order by cfo_nbr ;"); 
+                } else {
+                    res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, car_name " +
+                         " from cfo_mstr inner join car_mstr on car_id = cfo_cust where " +
+                        " cfo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " cfo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " cfo_orddate >= " + "'" + keys[4] + "'" + " AND " + 
+                        " cfo_orddate <= " + "'" + keys[5] + "'" + " AND " +           
+                        " cfo_site = " + "'" + keys[6] + "'" + " AND " +
+                        " order by cfo_nbr ;"); 
+                }
+             }
+                }
+             
+             // if pick date type
+            if (keys[0].equals("Pickup Date")) {
+             if (! keys[7].isBlank()) {    
+             
+                if (keys[1].equals("1")) { 
+                res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name " +
+                         " from cfo_mstr inner join cfo_det on cfod_nbr = cfo_nbr and cfod_revision = cfo_revision " +
+                        " inner join cm_mstr on cm_code = cfo_cust where " +
+                        " cfo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " cfo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " cfod_type = " + "'" + "Load" + "'" + " AND " +        
+                        " cfod_date >= " + "'" + keys[4] + "'" + " AND " +
+                        " cfod_date <= " + "'" + keys[5] + "'" + " AND " + 
+                        " cfo_site = " + "'" + keys[6] + "'" + " AND " +        
+                        " cfo_orderstatus = " + "'" + keys[7] + "'" +
+                        " order by cfo_nbr ;");
+                } else {
+                    res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, car_name " +
+                         " from cfo_mstr inner join car_mstr on car_id = cfo_cust where " +
+                        " cfo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " cfo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " cfo_orddate >= " + "'" + keys[4] + "'" + " AND " + 
+                        " cfo_orddate <= " + "'" + keys[5] + "'" + " AND " +           
+                        " cfo_site = " + "'" + keys[6] + "'" + " AND " +        
+                        " cfo_orderstatus = " + "'" + keys[7] + "'" +
+                        " order by cfo_nbr ;");
+                }
+             } else {
+                 
+                if (keys[1].equals("1")) {  
+                res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, cm_name " +
+                        " from cfo_mstr inner join cfo_det on cfod_nbr = cfo_nbr and cfod_revision = cfo_revision " +
+                        " inner join cm_mstr on cm_code = cfo_cust where " +
+                        " cfo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " cfo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " cfod_type = " + "'" + "Load" + "'" + " AND " +        
+                        " cfod_date >= " + "'" + keys[4] + "'" + " AND " +
+                        " cfod_date <= " + "'" + keys[5] + "'" + " AND " + 
+                        " cfo_site = " + "'" + keys[6] + "'" + " AND " +
+                        " order by cfo_nbr ;"); 
+                } else {
+                    res = st.executeQuery("select cfo_custfonbr, cfo_nbr, cfo_revision, cfo_orderstatus, cfo_cust, cfo_orddate, " +
+                      " cfo_truckid, cfo_driver, cfo_ratetype, cfo_cost, car_name " +
+                         " from cfo_mstr inner join car_mstr on car_id = cfo_cust where " +
+                        " cfo_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " cfo_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " cfo_orddate >= " + "'" + keys[4] + "'" + " AND " + 
+                        " cfo_orddate <= " + "'" + keys[5] + "'" + " AND " +           
+                        " cfo_site = " + "'" + keys[6] + "'" + " AND " +
+                        " order by cfo_nbr ;"); 
+                }
+             }
+            } 
+             
+                    String cname = "";
+                    while (res.next()) {
+                     
+                     if (keys[1].equals("1")) {
+                        cname = res.getString("cm_name");
+                     } else {
+                        cname = res.getString("car_name");
+                     }
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put("detail");
+                        rowArray.put(res.getString("cfo_nbr"));
+                        rowArray.put(res.getString("cfo_revision"));
+                        rowArray.put(res.getString("cfo_orderstatus"));
+                        rowArray.put(res.getString("cfo_orddate"));
+                        rowArray.put(cname);
+                        rowArray.put(res.getString("cfo_custfonbr"));
+                        rowArray.put(res.getString("cfo_truckid"));
+                        rowArray.put(res.getString("cfo_driver"));
+                        rowArray.put(res.getString("cfo_ratetype"));
+                        rowArray.put(bsNumber(res.getDouble("cfo_cost")));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    public static String getCFOBrowseViewDet(String cfo, String revision) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {
+                
+                res = st.executeQuery("select cfod_nbr, cfod_stopline, cfod_type, cfod_date, cfod_datetype, cfod_name, cfod_line1, cfod_city, cfod_state, cfod_zip from cfo_det " +
+                        " where cfod_nbr = " + "'" + cfo + "'" +
+                        " and cfod_revision = " + "'" + revision + "'" +  ";");
+                    while (res.next()) { 
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("cfod_stopline"));
+                        rowArray.put(res.getString("cfod_type"));
+                        rowArray.put(res.getString("cfod_datetype"));
+                        rowArray.put(res.getString("cfod_date"));
+                        rowArray.put(res.getString("cfod_name"));
+                        rowArray.put(res.getString("cfod_line1"));
+                        rowArray.put(res.getString("cfod_city"));
+                        rowArray.put(res.getString("cfod_state"));
+                        rowArray.put(res.getString("cfod_zip"));
+                        jsonarray.put(rowArray);
+                }
+               
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    
     public static String[] updateFreightInvoice(ArrayList<String[]> sacs, String shipper, String userid) {
       
         if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
