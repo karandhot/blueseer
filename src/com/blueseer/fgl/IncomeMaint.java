@@ -35,10 +35,19 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.fgl.fglData.BankMstr;
+import static com.blueseer.fgl.fglData.addGL;
+import static com.blueseer.fgl.fglData.getBankMstr;
+import static com.blueseer.fgl.fglData.getGLHist;
+import static com.blueseer.fgl.fglData.getGLTran;
+import com.blueseer.fgl.fglData.gl_tran;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsNumber;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.callDialog;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
+import com.blueseer.utl.BlueSeerUtils.dbaction;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import static com.blueseer.utl.BlueSeerUtils.luModel;
@@ -49,61 +58,22 @@ import static com.blueseer.utl.BlueSeerUtils.luinput;
 import static com.blueseer.utl.BlueSeerUtils.luml;
 import static com.blueseer.utl.BlueSeerUtils.lurb1;
 import static com.blueseer.utl.BlueSeerUtils.parseDate;
+import static com.blueseer.utl.BlueSeerUtils.setDateDB;
 import com.blueseer.utl.DTData;
 import com.blueseer.utl.IBlueSeer;
+import com.blueseer.utl.IBlueSeerV;
 import com.blueseer.utl.OVData;
-import static com.blueseer.utl.OVData.canUpdate;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.JOptionPane;
 
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Date;
-import javax.print.Doc;
-import javax.print.DocFlavor;
-import javax.print.DocPrintJob;
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
-import javax.print.SimpleDoc;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.ToolTipManager;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import static com.blueseer.utl.OVData.getDueDateFromTerms;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.Connection;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -120,13 +90,22 @@ import javax.swing.SwingWorker;
  *
  * @author vaughnte
  */
-public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
-                
-                 // global variable declarations
-                boolean isLoad = false;
-                double actamt = 0;
-                String cashacct = "";
-                int line = 0;
+public class IncomeMaint extends javax.swing.JPanel {
+    // global variable declarations
+        boolean isLoad = false;
+        boolean canUpdate = false;
+        boolean isAutoPost = false;
+        ArrayList<String[]> initDataSets = null;
+        String defaultSite = "";
+        String defaultCurrency = "";
+        String defaultCC = "";
+        String defaultARBank = "";
+        String defaultBankAcct = "";
+            
+        ArrayList<gl_tran> gltlist = null;
+        ArrayList<fglData.gl_hist> glhlist = null;
+        double actamt = 0.00;
+        int line = 0;
     
     // global datatablemodel declarations       
                 
@@ -145,15 +124,15 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
     }
    
       // interface functions implemented
-    public void executeTask(String x, String[] y) { 
+    public void executeTask(BlueSeerUtils.dbaction x, String[] y) { 
       
         class Task extends SwingWorker<String[], Void> {
        
           String type = "";
           String[] key = null;
           
-          public Task(String type, String[] key) { 
-              this.type = type;
+          public Task(BlueSeerUtils.dbaction type, String[] key) { 
+              this.type = type.name();
               this.key = key;
           } 
            
@@ -190,16 +169,12 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
             String[] message = get();
            
             BlueSeerUtils.endTask(message);
-           if (this.type.equals("delete")) {
-             initvars(null);  
-           } else if (this.type.equals("get") && message[0].equals("1")) {
-             tbkey.requestFocus();
-           } else if (this.type.equals("get") && message[0].equals("0")) {
-             tbkey.requestFocus();
-           } else {
-             initvars(null);  
-           }
-           
+               if (this.type.equals("get")) {
+                 updateForm(key[1]); // key[1] should contain gl_tran or gl_hist...indicating what type of key is in key[0]
+                 tbkey.requestFocus();
+               } else {
+                 initvars(null);  
+               }
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
@@ -324,11 +299,14 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
     }
     
     
-    public void setComponentDefaultValues() {
+    public void setComponentDefaultValues(boolean init) {
        
         isLoad = true;
         tbkey.setText("");
       
+        if (init) {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "banks,accounts,depts,arc_bank");
+        }
         
          actamt = 0;
          line = 0;
@@ -347,42 +325,59 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
         
        
         ddbank.removeAllItems();
-        ArrayList<String> bank = OVData.getbanklist();
-        for (int i = 0; i < bank.size(); i++) {
-            ddbank.addItem(bank.get(i));
-        }
-        ddbank.setSelectedItem(OVData.getDefaultARBank()); 
-        lbcashacct.setText("Cash Acct: " + OVData.getDefaultBankAcct(ddbank.getSelectedItem().toString()));
-        cashacct = OVData.getDefaultBankAcct(ddbank.getSelectedItem().toString());
-        
         ddsite.removeAllItems();
-        ArrayList mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (int i = 0; i < mylist.size(); i++) {
-            ddsite.addItem(mylist.get(i));
-        }
-        ddsite.setSelectedItem(OVData.getDefaultSite());
-        
         ddacct.removeAllItems();
-        ArrayList<String> myaccts = fglData.getGLAcctListByType("I");
-        for (String code : myaccts) {
-            ddacct.addItem(code);
-        }
-        ddacct.setSelectedIndex(0);
-        lbacct.setText(fglData.getGLAcctDesc(cashacct));
+        ddcc.removeAllItems();
         
-           ddcc.removeAllItems();
-        ArrayList<String> mycc = fglData.getGLCCList();
-        for (String code : mycc) {
-            ddcc.addItem(code);
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("site")) {
+                defaultSite = s[1];
+            }
+            if (s[0].equals("autopost")) {
+                isAutoPost = BlueSeerUtils.ConvertStringToBool(s[1]);
+            }
+            if (s[0].equals("cc")) {
+                defaultCC = s[1];
+            }
+            if (s[0].equals("arc_bank")) {
+                defaultARBank = s[1];
+            }
+            if (s[0].equals("def_bank_acct")) {
+                defaultBankAcct = s[1];
+            }
+            if (s[0].equals("banks")) {
+              ddbank.addItem(s[1]); 
+            }
+            if (s[0].equals("accounts")) {
+              ddacct.addItem(s[1]); 
+            }
+            if (s[0].equals("depts")) {
+              ddcc.addItem(s[1]); 
+            }
         }
-        ddcc.setSelectedItem(OVData.getDefaultCC());
+        
+        ddcc.setSelectedItem(defaultCC);
+        ddsite.setSelectedItem(defaultSite);
+        ddbank.setSelectedItem(defaultARBank); 
+        lbcashacct.setText("Cash Acct: " + defaultBankAcct);
+        
+       // lbacct.setText(fglData.getGLAcctDesc(cashacct));
+        
+        
+        
       
        isLoad = false;
     }
     
     public void newAction(String x) {
        setPanelComponentState(this, true);
-        setComponentDefaultValues();
+        setComponentDefaultValues(false);
         BlueSeerUtils.message(new String[]{"0",BlueSeerUtils.addRecordInit});
         btnew.setEnabled(false);
         tbkey.setEditable(true);
@@ -410,7 +405,7 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
     }
     
     public boolean validateInput(String x) {
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }
@@ -442,7 +437,7 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
                     return b;
                 }
                 
-                 if (cashacct.isEmpty()) {
+                 if (defaultBankAcct.isEmpty()) {
                     b = false;
                     bsmf.MainFrame.show(getMessageTag(1050));
                     return b;
@@ -463,12 +458,12 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
     public void initvars(String[] arg) {
        
        setPanelComponentState(this, false); 
-       setComponentDefaultValues();
+       setComponentDefaultValues(initDataSets == null);
         btnew.setEnabled(true);
         btlookup.setEnabled(true);
         
         if (arg != null && arg.length > 0) {
-            executeTask("get",arg);
+            executeTask(BlueSeerUtils.dbaction.get,arg);
         } else {
             tbkey.setEnabled(true);
             tbkey.setEditable(true);
@@ -478,93 +473,13 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
     
     
     public String[] addRecord(String[] x) {
-     String[] m = new String[2];
      
-     try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            boolean error = false;
-            try {
-                boolean proceed = true;
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                java.util.Date now = new java.util.Date();
-               
-                
-                actamt = bsParseDouble(tbamt.getText());
-                String curr = OVData.getDefaultCurrency();
-                String basecurr = curr;
-                       // Credit Income Account
-                       st.executeUpdate("insert into gl_tran "
-                        + "(glt_line, glt_acct, glt_cc, glt_effdate, glt_amt, glt_base_amt, glt_curr, glt_base_curr, glt_ref, glt_site, glt_type, glt_desc, glt_userid, glt_entdate )"
-                        + " values ( " 
-                        + "'1'" + ","
-                        + "'" + ddacct.getSelectedItem().toString() + "'" + ","
-                        + "'" + ddcc.getSelectedItem().toString() + "'" + ","
-                        + "'" + dfdate.format(dcdate.getDate()) + "'" + ","
-                        + "'" + currformatDouble(actamt * -1).replace(defaultDecimalSeparator, '.') + "'" + ","
-                        + "'" + currformatDouble(actamt * -1).replace(defaultDecimalSeparator, '.') + "'" + ","
-                        + "'" + curr + "'" + ","
-                        + "'" + basecurr + "'" + ","        
-                        + "'" + tbkey.getText().toString() + "'" + ","
-                        + "'" + ddsite.getSelectedItem().toString() + "'" + ","
-                        + "'" + "JL" + "'" + ","
-                        + "'" + tbrmks.getText() + "'" + ","
-                        + "'" + bsmf.MainFrame.userid + "'" + ","
-                         + "'" + dfdate.format(now) + "'"
-                                + ")"
-                        + ";" );
-                    
-                       // Debit Cash Account
-                        st.executeUpdate("insert into gl_tran "
-                        + "(glt_line, glt_acct, glt_cc, glt_effdate, glt_amt, glt_base_amt, glt_curr, glt_base_curr, glt_ref, glt_site, glt_type, glt_desc, glt_userid, glt_entdate )"
-                        + " values ( " 
-                        + "'1'" + ","
-                        + "'" + cashacct + "'" + ","
-                        + "'" + ddcc.getSelectedItem().toString() + "'" + ","
-                        + "'" + dfdate.format(dcdate.getDate()) + "'" + ","
-                        + "'" + currformatDouble(actamt).replace(defaultDecimalSeparator, '.') + "'" + ","
-                        + "'" + currformatDouble(actamt).replace(defaultDecimalSeparator, '.') + "'" + ","
-                        + "'" + curr + "'" + ","
-                        + "'" + basecurr + "'" + ","
-                        + "'" + tbkey.getText().toString() + "'" + ","
-                        + "'" + ddsite.getSelectedItem().toString() + "'" + ","
-                        + "'" + "JL" + "'" + ","
-                        + "'" + tbrmks.getText() + "'" + ","
-                        + "'" + bsmf.MainFrame.userid + "'" + ","
-                         + "'" + dfdate.format(now) + "'"
-                                + ")"
-                        + ";" );                  
-                   
-                      m = new String[] {BlueSeerUtils.SuccessBit, BlueSeerUtils.addRecordSuccess};
-                      
-                       // autopost
-        if (OVData.isAutoPost()) {
+        String[] m = addGL(createRecord());
+      // autopost
+        if (isAutoPost) {
             fglData.PostGL();
         } 
-                      
-                   initvars(null);
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                 m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordSQLError};  
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-             m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.addRecordConnError};
-        }
-     
-     return m;
+         return m;      
      }
      
     public String[] updateRecord(String[] x) {
@@ -580,53 +495,44 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
      }
       
     public String[] getRecord(String[] x) {
-       String[] m = new String[2];
-       
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                actamt = 0;
-                res = st.executeQuery("SELECT * FROM  gl_tran where glt_id = " + "'" + x[0] + "'" + " and glt_ref = " + "'" + x[1] + "'" + ";");
-                while (res.next()) {
-                  i++;
-                     
-                     ddacct.setSelectedItem(res.getString("glt_acct"));
-                     tbkey.setText(res.getString("glt_ref"));
-                     dcdate.setDate(parseDate(res.getString("glt_effdate")));
-                     tbrmks.setText(res.getString("glt_desc"));
-                     ddsite.setSelectedItem(res.getString("glt_site"));
-                     
-                     ddcc.setSelectedItem(res.getString("glt_cc"));
-                     if (res.getDouble("glt_amt") > 0) {
-                       tbamt.setText(res.getString("glt_amt").replace('.',defaultDecimalSeparator));
-                     }
-                }
-               
-                // set Action if Record found (i > 0)
-                m = setAction(i);
+        // x should be doc, 'gl_tran'  or   doc, 'gl_hist'
+       if (x.length > 1 && x[1].equals("gl_tran")) { 
+       gltlist = getGLTran(x); 
+       }
+       if (x.length > 1 && ! x[1].equals("gl_tran")) { 
+       glhlist = getGLHist(x); 
+       }
+       return new String[]{"0",""};
+    }
+    
+    public void updateForm(String x) {
                 
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordSQLError};  
-            } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-            m = new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getRecordConnError};  
+        int i = 0;
+        if (x.equals("gl_tran")) {
+        for (gl_tran glt : gltlist) { 
+                    if (glt.glt_amt() < 0) {
+                    ddacct.setSelectedItem(glt.glt_acct());
+                    ddsite.setSelectedItem(glt.glt_site());
+                    ddcc.setSelectedItem(glt.glt_cc());
+                    tbkey.setText(glt.glt_doc());
+                    dcdate.setDate(parseDate(glt.glt_entdate()));
+                    tbamt.setText(bsNumber(glt.glt_amt()));
+                    tbrmks.setText(glt.glt_desc());
+                    }   
         }
-      return m;
+        } else {
+          for (fglData.gl_hist glh : glhlist) { 
+                    if (glh.glh_amt() < 0) {
+                    ddacct.setSelectedItem(glh.glh_acct());
+                    ddsite.setSelectedItem(glh.glh_site());
+                    ddcc.setSelectedItem(glh.glh_cc());
+                    tbkey.setText(glh.glh_doc());
+                    dcdate.setDate(parseDate(glh.glh_entdate()));
+                    tbamt.setText(bsNumber(glh.glh_amt())); 
+                    tbrmks.setText(glh.glh_desc()); 
+                    }  
+          }  
+        }        
     }
     
     public void lookUpFrame() {
@@ -635,9 +541,9 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
         lual = new ActionListener() {
         public void actionPerformed(ActionEvent event) {
         if (lurb1.isSelected()) {  
-         luModel = DTData.getGLTranBrowseUtil(luinput.getText(),0, "glt_ref");
+         luModel = DTData.getGLTranBrowseUtil2(luinput.getText(),0, "glt_doc");
         } else {
-         luModel = DTData.getGLTranBrowseUtil(luinput.getText(),0, "glt_acct");   
+         luModel = DTData.getGLTranBrowseUtil2(luinput.getText(),0, "glt_acct");   
         }
         luTable.setModel(luModel);
         luTable.getColumnModel().getColumn(0).setMaxWidth(50);
@@ -658,7 +564,8 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
                 int column = target.getSelectedColumn();
                 if ( column == 0) {
                 ludialog.dispose();
-                initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString()});
+                // initvars(new String[]{target.getValueAt(row,1).toString(), target.getValueAt(row,2).toString()});
+                initvars(new String[]{target.getValueAt(row,2).toString(), "gl_tran"});
                 }
             }
         };
@@ -670,7 +577,53 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
         
     }
  
-      
+    public ArrayList<gl_tran> createRecord() {
+        ArrayList<gl_tran> glv = new ArrayList<gl_tran>();
+        fglData.gl_tran gv = new fglData.gl_tran(null,
+                    "", // id DB assigned
+                    tbkey.getText(), // ref
+                    setDateDB(dcdate.getDate()), // effdate
+                    setDateDB(dcdate.getDate()), // entdate
+                    "0", // timestamp DB assigned
+                    ddacct.getSelectedItem().toString(), // acct
+                    ddcc.getSelectedItem().toString(), // cc
+                    bsParseDouble(currformatDouble(actamt * -1).replace(defaultDecimalSeparator, '.')), //amt
+                    bsParseDouble(currformatDouble(actamt * -1).replace(defaultDecimalSeparator, '.')), // baseamt
+                    ddsite.getSelectedItem().toString(), //site 
+                    tbkey.getText(), // doc
+                    "1", // line
+                    "JL", // type
+                    defaultCurrency, // currency
+                    defaultCurrency, // base currency
+                    tbrmks.getText(), // desc
+                    bsmf.MainFrame.userid // userid
+                    );
+                    glv.add(gv);
+                    
+                    // Debit Cash Account
+                    gv = new fglData.gl_tran(null,
+                    "", // id DB assigned
+                    tbkey.getText(), // ref
+                    setDateDB(dcdate.getDate()), // effdate
+                    setDateDB(dcdate.getDate()), // entdate
+                    "0", // timestamp DB assigned
+                    defaultBankAcct, // acct
+                    ddcc.getSelectedItem().toString(), // cc
+                    bsParseDouble(currformatDouble(actamt).replace(defaultDecimalSeparator, '.')), //amt
+                    bsParseDouble(currformatDouble(actamt).replace(defaultDecimalSeparator, '.')), // baseamt
+                    ddsite.getSelectedItem().toString(), //site 
+                    tbkey.getText(), // doc
+                    "1", // line
+                    "JL", // type
+                    defaultCurrency, // currency
+                    defaultCurrency, // base currency
+                    tbrmks.getText(), // desc
+                    bsmf.MainFrame.userid // userid
+                    );
+                    glv.add(gv);
+                    
+                    return glv;
+    }  
  
     /**
      * This method is called from within the constructor to initialize the form.
@@ -902,7 +855,7 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
            return;
        }
         setPanelComponentState(this, false);
-        executeTask("add", new String[]{tbkey.getText()});
+        executeTask(dbaction.add, new String[]{tbkey.getText()});
     }//GEN-LAST:event_btaddActionPerformed
 
     private void ddsiteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddsiteActionPerformed
@@ -945,13 +898,15 @@ public class IncomeMaint extends javax.swing.JPanel implements IBlueSeer {
     }//GEN-LAST:event_btclearActionPerformed
 
     private void tbkeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tbkeyActionPerformed
-        executeTask("get", new String[]{tbkey.getText()});
+        executeTask(dbaction.get, new String[]{tbkey.getText()});
     }//GEN-LAST:event_tbkeyActionPerformed
 
     private void ddbankActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ddbankActionPerformed
         if (ddbank.getSelectedItem() != null && ! isLoad ) {
-          lbcashacct.setText("Cash Acct: " + OVData.getDefaultBankAcct(ddbank.getSelectedItem().toString()));
-           cashacct = OVData.getDefaultBankAcct(ddbank.getSelectedItem().toString());
+          BankMstr bk = getBankMstr(new String[]{ddbank.getSelectedItem().toString()});
+          defaultBankAcct = bk.account();
+          lbcashacct.setText("Cash Acct: " + defaultBankAcct);
+           
         }
     }//GEN-LAST:event_ddbankActionPerformed
 

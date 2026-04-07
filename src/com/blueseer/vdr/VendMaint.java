@@ -929,7 +929,7 @@ public class VendMaint extends javax.swing.JPanel implements IBlueSeerV {
     
     public boolean validateInputShipTo(dbaction action) {
         
-        if (! canUpdate(this.getClass().getName())) {
+        if (! canUpdate) {
             bsmf.MainFrame.show(getMessageTag(1185));
             return false;
         }

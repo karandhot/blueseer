@@ -3477,6 +3477,27 @@ public class admData {
                             }
                         }
                         
+                        if (sd.equals("arc_bank")) {
+                            res = st.executeQuery("select arc_bank from ar_ctrl;" );
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "arc_bank";
+                               s[1] = res.getString("arc_bank");
+                               lines.add(s);
+                            }
+                        }
+                        
+                        if (sd.equals("def_bank_acct")) {
+                            res = st.executeQuery("select bk_acct from bk_mstr inner join ar_ctrl on bk_id = arc_bank ;" );
+                            while (res.next()) {
+                               String[] s = new String[2];
+                               s[0] = "def_bank_acct";
+                               s[1] = res.getString("bk_acct");
+                               lines.add(s);
+                            }
+                        }
+
+                        
                         if (sd.equals("payc_payrolltax_acct")) {
                             res = st.executeQuery("select payc_payrolltax_acct from pay_ctrl;" );
                             while (res.next()) {
