@@ -781,8 +781,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param2"),
                     request.getHeader("param3"),
                     bsParseInt(request.getHeader("param4")),
-                    bsParseInt(request.getHeader("param5")),
-                    BlueSeerUtils.ConvertStringToBool(request.getHeader("param6"))));
+                    bsParseInt(request.getHeader("param5"))));
       break;
     } 
     

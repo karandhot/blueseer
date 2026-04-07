@@ -4752,7 +4752,7 @@ public class fglData {
         return jsonarray.toString();
     }
         
-    public static String getAccountBalanceDetView(String acct, String cc, String site, int year, int period, boolean isCC) {
+    public static String getAccountBalanceDetView(String acct, String cc, String site, int year, int period) {
         JSONArray jsonarray = new JSONArray();
         ArrayList<String> actdatearray = fglData.getGLCalForPeriod(year, period);  
         String datestart = String.valueOf(actdatearray.get(0));
@@ -4771,20 +4771,13 @@ public class fglData {
             try {
                 int i = 0;
                 
-                if (isCC) {
-                res = st.executeQuery("select glh_acct, glh_cc, glh_site, glh_ref, glh_doc, glh_effdate, glh_desc, glh_base_amt from gl_hist " +
-                        " where glh_acct = " + "'" + acct + "'" + " AND " + 
-                        " glh_cc = " + "'" + cc + "'" + " AND " +
-                        " glh_site = " + "'" + site + "'" + " AND " +
-                        " glh_effdate >= " + "'" + datestart + "'" + " AND " +
-                        " glh_effdate <= " + "'" + dateend + "'" + ";");
-                } else {
+               
                   res = st.executeQuery("select glh_acct, glh_cc, glh_site, glh_type, glh_ref, glh_doc, glh_effdate, glh_desc, glh_base_amt from gl_hist " +
                         " where glh_acct = " + "'" + acct + "'" + " AND " + 
                         " glh_site = " + "'" + site + "'" + " AND " +
                         " glh_effdate >= " + "'" + datestart + "'" + " AND " +
                         " glh_effdate <= " + "'" + dateend + "'" + ";");  
-                }
+                
                 while (res.next()) {
                     JSONArray rowArray = new JSONArray(); 
                     rowArray.put(res.getString("glh_acct"));

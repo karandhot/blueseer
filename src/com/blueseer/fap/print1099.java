@@ -579,7 +579,7 @@ public class print1099 extends javax.swing.JPanel {
                 return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
             }
         } else {
-            jsonString = getAccountBalanceDetView(x[0], x[1], x[2], bsParseInt(x[3]), bsParseInt(x[4]), BlueSeerUtils.ConvertStringToBool(x[5])); 
+            jsonString = getAccountBalanceDetView(x[0], x[1], x[2], bsParseInt(x[3]), bsParseInt(x[4])); 
         }        
         roData = jsonToData(jsonString);
         

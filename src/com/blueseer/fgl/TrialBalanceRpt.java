@@ -498,17 +498,7 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
 
     public void done_getBrowseView() {
          setPanelComponentState(this, true);
-         if (cbcc.isSelected()) {    
-              tablereport.setModel(mymodelCC);
-              tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
-              tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
-              tablereport.getColumnModel().getColumn(8).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
-              tablereport.getColumnModel().getColumn(9).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
-              tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
-         
-         //  tablereport.getColumnModel().getColumn(0).setCellRenderer(new ButtonRenderer());
-         tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-          } else {
+        
               tablereport.setModel(mymodel);
               tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
               tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
@@ -517,27 +507,19 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
               tablereport.getColumnModel().getColumn(10).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
          
          tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
-          }
+          
         
         for (int i = 0 ; i < tablereport.getColumnCount(); i++){ 
-              if (cbcc.isSelected()) {
-                  if (i == 7 || i == 8 ) {
-                 tablereport.getTableHeader().getColumnModel().getColumn(i)
-                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
-                  } else {
-                  tablereport.getTableHeader().getColumnModel().getColumn(i)
-                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
-                  }
-              } else {
-                   if (i >= 6 && i <= 10) {
-                 tablereport.getTableHeader().getColumnModel().getColumn(i)
-                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
-                  } else {
-                  tablereport.getTableHeader().getColumnModel().getColumn(i)
-                 .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
-                  }
-              }
+              
+          if (i >= 6 && i <= 10) {
+          tablereport.getTableHeader().getColumnModel().getColumn(i)
+         .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.RIGHT));
+          } else {
+          tablereport.getTableHeader().getColumnModel().getColumn(i)
+         .setHeaderRenderer(new myHeaderRenderer(tablereport, JLabel.LEFT));    
           }
+              
+        }
         
         int i = 0;
         double totendbal = 0;
@@ -550,37 +532,21 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
         if (roData != null) {
             
              // drop column 16
+      /*
       Object[][] newdata = null;
       if (! cbcc.isSelected()) {
           newdata = dropColumn(roData, 2);
       } else {
           newdata = roData;
       }
-            
-        for (Object[] rowData : newdata) {
+     */       
+        for (Object[] rowData : roData) {
             if (cbzero.isSelected() && bsParseDouble(rowData[6].toString()) == 0 && bsParseDouble(rowData[7].toString()) == 0 && bsParseDouble(rowData[10].toString()) == 0) {
                      continue;
             }
             
             
-            if (cbcc.isSelected()) {
-            totendbal = totendbal + bsParseDouble(rowData[9].toString());
-                totbegbal = totbegbal + bsParseDouble(rowData[7].toString());
-                totactivity = totactivity + bsParseDouble(rowData[8].toString());
-                rowData[6] = bsParseDouble(rowData[7].toString());
-                rowData[7] = bsParseDouble(rowData[8].toString());
-                if (bsParseDouble(rowData[11].toString()) > 0) {  // endbal
-                    totaldebits = totaldebits + bsParseDouble(rowData[11].toString());
-                    rowData[9] = bsParseDouble(rowData[11].toString());
-                    rowData[10] = 0;
-                } else {
-                    totalcredits = totalcredits + bsParseDouble(rowData[11].toString());
-                    rowData[9] = 0;
-                    rowData[10] = -1 * bsParseDouble(rowData[11].toString());
-                }
-                rowData[11] = bsParseDouble(rowData[11].toString());
-                mymodelCC.addRow(rowData);
-            } else {  
+            
                 totendbal = totendbal + bsParseDouble(rowData[8].toString());
                 totbegbal = totbegbal + bsParseDouble(rowData[6].toString());
                 totactivity = totactivity + bsParseDouble(rowData[7].toString());
@@ -597,7 +563,7 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
                 }
                 rowData[10] = bsParseDouble(rowData[10].toString());
                 mymodel.addRow(rowData);   
-            }
+            
             
             
             
@@ -620,7 +586,6 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
             list.add(new String[]{"param3", x[2]});
             list.add(new String[]{"param4", x[3]});
             list.add(new String[]{"param5", x[4]});
-            list.add(new String[]{"param6", x[5]});
             try {
                 jsonString = sendServerPost(list, "", null, "dataServFIN"); 
             } catch (IOException ex) {
@@ -628,7 +593,7 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
                 return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
             }
         } else {
-            jsonString = getAccountBalanceDetView(x[0], x[1], x[2], bsParseInt(x[3]), bsParseInt(x[4]), BlueSeerUtils.ConvertStringToBool(x[5])); 
+            jsonString = getAccountBalanceDetView(x[0], x[1], x[2], bsParseInt(x[3]), bsParseInt(x[4])); 
         }        
         roData = jsonToData(jsonString);
         
@@ -683,7 +648,6 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
         ddyear = new javax.swing.JComboBox();
         datelabel = new javax.swing.JLabel();
         ddsite = new javax.swing.JComboBox();
-        cbcc = new javax.swing.JCheckBox();
         btprint = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
@@ -783,9 +747,6 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
             }
         });
 
-        cbcc.setText("CostCenter");
-        cbcc.setName("cbcostcenter"); // NOI18N
-
         btprint.setText("Print/PDF");
         btprint.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -816,18 +777,15 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
                         .addGap(4, 4, 4)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel2Layout.createSequentialGroup()
-                                .addComponent(cbcc)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(cbzero))
-                            .addGroup(jPanel2Layout.createSequentialGroup()
                                 .addComponent(ddsite, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
                                 .addComponent(btRun)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btdetail)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btprint)))
-                        .addContainerGap(149, Short.MAX_VALUE))))
+                                .addComponent(btprint))
+                            .addComponent(cbzero))
+                        .addContainerGap(157, Short.MAX_VALUE))))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -845,7 +803,6 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ddperiod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
-                    .addComponent(cbcc)
                     .addComponent(cbzero, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(datelabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1117,21 +1074,13 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
         int col = tablereport.columnAtPoint(evt.getPoint());
         if ( col == 0) {
             
-            if (cbcc.isSelected()) {
+           
             executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 1).toString(),
-                tablereport.getValueAt(row, 6).toString(), // cc
-                tablereport.getValueAt(row, 5).toString(),
-                ddyear.getSelectedItem().toString(),
-                ddperiod.getSelectedItem().toString(),
-                String.valueOf(cbcc.isSelected())}); 
-            } else {
-                executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 1).toString(),
-                "", // cc
-                tablereport.getValueAt(row, 5).toString(),
-                ddyear.getSelectedItem().toString(),
-                ddperiod.getSelectedItem().toString(),
-                String.valueOf(cbcc.isSelected())});
-            }
+            "", // cc
+            tablereport.getValueAt(row, 5).toString(),
+            ddyear.getSelectedItem().toString(),
+            ddperiod.getSelectedItem().toString()});
+            
             
             /*
                if (tablereport.getColumnCount() == 8) {
@@ -1180,7 +1129,6 @@ public class TrialBalanceRpt extends javax.swing.JPanel {
     private javax.swing.JButton btRun;
     private javax.swing.JButton btdetail;
     private javax.swing.JButton btprint;
-    private javax.swing.JCheckBox cbcc;
     private javax.swing.JCheckBox cbzero;
     private javax.swing.JLabel datelabel;
     private javax.swing.JComboBox ddperiod;
