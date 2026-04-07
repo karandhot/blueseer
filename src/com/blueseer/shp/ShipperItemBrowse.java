@@ -400,11 +400,7 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-        
-               
-        
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
+        executeTask("dataInit", null);
     }
     
     
@@ -421,17 +417,25 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
         setPanelComponentState(this, true);
         tbtotqty.setText("0");
         tbtotlines.setText("0");
-      
-        
         
         java.util.Date now = new java.util.Date();
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         DateFormat dfyear = new SimpleDateFormat("yyyy");
         DateFormat dfperiod = new SimpleDateFormat("M");
+        
+        dcfrom.setDate(now);
+         dcto.setDate(now);
+         Calendar calfrom = Calendar.getInstance();
+         Calendar calto = Calendar.getInstance();
+         calfrom.add(Calendar.DATE, -30);
+         dcfrom.setDate(calfrom.getTime());
+         calto.add(Calendar.DATE, 30);
+         dcto.setDate(calto.getTime());
+              
+        detailpanel.setVisible(false);
        
         
         mymodel.setNumRows(0);
-        tablereport.setModel(mymodel);
         
         
        
@@ -502,7 +506,6 @@ public class ShipperItemBrowse extends javax.swing.JPanel {
     public void done_getBrowseView() {
         setPanelComponentState(this, true);
         int i = 0;
-        mymodel.setNumRows(0);
         double totqty = 0;
         
         if (roData != null) {
