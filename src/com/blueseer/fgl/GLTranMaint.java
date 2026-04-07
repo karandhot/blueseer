@@ -628,8 +628,7 @@ public class GLTranMaint extends javax.swing.JPanel {
     
     public ArrayList<gl_tran> createRecord() {
         ArrayList<gl_tran> glv = new ArrayList<gl_tran>();
-        String curr = OVData.getDefaultCurrency();
-        String basecurr = curr;
+        String basecurr = defaultCurrency;
         double amt = 0.00;
         // for reversing type
         String[] caldate = fglData.getGLCalForDate(effdate.getDate());
@@ -661,7 +660,7 @@ public class GLTranMaint extends javax.swing.JPanel {
                     tbref.getText(), // doc
                     transtable.getValueAt(i, 0).toString(), // line
                     type, // type
-                    curr, // currency
+                    defaultCurrency, // currency
                     basecurr, // base currency
                     transtable.getValueAt(i, 3).toString(), // desc
                     tbuserid.getText() // userid
@@ -683,7 +682,7 @@ public class GLTranMaint extends javax.swing.JPanel {
                     tbref.getText(), // doc
                     transtable.getValueAt(i, 0).toString(), // line
                     type, // type
-                    curr, // currency
+                    defaultCurrency, // currency
                     basecurr, // base currency
                     transtable.getValueAt(i, 3).toString(), // desc
                     tbuserid.getText() // userid

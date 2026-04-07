@@ -90,6 +90,9 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerV {
         String defaultSite = "";
         String defaultCurrency = "";
         String defaultCC = "";
+        String defaultAPAcct = "";
+        String defaultAPBank = "";
+        
                 public static car_mstr x = null;
     // global datatablemodel declarations       
    
@@ -282,7 +285,7 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerV {
        cbapply.setSelected(false);
        
         if (init) {
-        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "states,countries");
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "states,countries,ap_ctrl");
         }
         
         ddstate.removeAllItems();
@@ -299,6 +302,15 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerV {
             }
             if (s[0].equals("site")) {
               defaultSite = s[1];  
+            }
+            if (s[0].equals("cc")) {
+              defaultCC = s[1];  
+            }
+            if (s[0].equals("apc_bank")) {
+              defaultAPBank = s[1];  
+            }
+            if (s[0].equals("apc_apacct")) {
+              defaultAPAcct = s[1];  
             }
           
             if (s[0].equals("states")) {
@@ -521,12 +533,12 @@ public class CarrierMaint extends javax.swing.JPanel implements IBlueSeerV {
                 "", // tbpricecode.getText(),
                 "", // tbdisccode.getText(),
                 "", // ddtaxcode.getSelectedItem().toString(),
-                OVData.getDefaultAPAcct(),
-                OVData.getDefaultCC(),
+                defaultAPAcct,
+                defaultCC,
                 "", //remarks 
                 "", // freighttype
-                OVData.getDefaultAPBank(),
-                OVData.getDefaultCurrency(),
+                defaultAPBank,
+                defaultCurrency,
                 "", // tbmisc.getText(), 
                 tbphone.getText(),
                 tbemail.getText(),

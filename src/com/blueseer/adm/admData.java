@@ -3467,23 +3467,19 @@ public class admData {
                             }
                         }
                         
-                        if (sd.equals("apc_autovoucher")) {
-                            res = st.executeQuery("select apc_autovoucher from ap_ctrl;");
+                        if (sd.equals("ap_ctrl")) {
+                            res = st.executeQuery("select * from ap_ctrl;");
                             while (res.next()) {
-                               String[] s = new String[2];
-                               s[0] = "apc_autovoucher";
-                               s[1] = res.getString("apc_autovoucher");
-                               lines.add(s);
+                               lines.add(new String[]{"apc_autovoucher", res.getString("apc_autovoucher")});
+                               lines.add(new String[]{"apc_bank", res.getString("apc_bank")});
+                               lines.add(new String[]{"apc_apacct", res.getString("apc_apacct")});
                             }
                         }
                         
-                        if (sd.equals("arc_bank")) {
-                            res = st.executeQuery("select arc_bank from ar_ctrl;" );
+                        if (sd.equals("ar_ctrl")) {
+                            res = st.executeQuery("select * from ar_ctrl;" );
                             while (res.next()) {
-                               String[] s = new String[2];
-                               s[0] = "arc_bank";
-                               s[1] = res.getString("arc_bank");
-                               lines.add(s);
+                               lines.add(new String[]{"arc_bank", res.getString("arc_bank")});
                             }
                         }
                         

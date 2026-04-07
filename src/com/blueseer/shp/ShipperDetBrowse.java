@@ -27,6 +27,7 @@ SOFTWARE.
 package com.blueseer.shp;
 
 import bsmf.MainFrame;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.db;
 import java.awt.Color;
 import java.awt.Component;
@@ -63,18 +64,30 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
+import com.blueseer.inv.invData;
+import com.blueseer.prd.prdData;
+import static com.blueseer.prd.prdData.getSerialBrowseViewDet;
+import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.sql.Connection;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 /**
  *
@@ -82,6 +95,11 @@ import javax.swing.JTabbedPane;
  */
 public class ShipperDetBrowse extends javax.swing.JPanel {
  
+    public String rsData; 
+    Object[][] roData;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
     
     javax.swing.table.DefaultTableModel mymodel = new javax.swing.table.DefaultTableModel(new Object[][]{},
                         new String[]{
@@ -92,18 +110,24 @@ public class ShipperDetBrowse extends javax.swing.JPanel {
                             getGlobalColumnTag("item"), 
                             getGlobalColumnTag("qty"), 
                             getGlobalColumnTag("netprice"), 
-                            getGlobalColumnTag("price")});
+                            getGlobalColumnTag("price")})
+            {
+                      @Override  
+                      public Class getColumnClass(int col) {  
+                        if (col == 5 || col == 6 || col == 7) {
+                            return Double.class;
+                        } else return String.class;  //other columns accept String values  
+                      }
+                      
+                      @Override
+                      public boolean isCellEditable(int row, int column) {
+                            return false;
+                            //Only the first column
+                            // return column == 1;
+                      }
+                        };
                 
-    javax.swing.table.DefaultTableModel modeldetail = new javax.swing.table.DefaultTableModel(new Object[][]{},
-                        new String[]{
-                            getGlobalColumnTag("shipper"), 
-                            getGlobalColumnTag("line"), 
-                            getGlobalColumnTag("item"), 
-                            getGlobalColumnTag("custitem"), 
-                            getGlobalColumnTag("order"), 
-                            getGlobalColumnTag("po"), 
-                            getGlobalColumnTag("qty"), 
-                            getGlobalColumnTag("netprice")});
+   
     
      class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -138,61 +162,130 @@ public class ShipperDetBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    public void getdetail(String shipper) {
+    public void executeTask(String x, String[] y) { 
       
-         modeldetail.setNumRows(0);
-         double totalsales = 0;
-         double totalqty = 0;
-       
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break;                 
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                res = st.executeQuery("select shd_id, shd_soline, shd_item, shd_custitem, shd_so, shd_po, shd_qty, shd_netprice from ship_det " +
-                        " where shd_id = " + "'" + shipper + "'" +  ";");
-                while (res.next()) {
-                    totalsales = totalsales + (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
-                    totalqty = totalqty + res.getDouble("shd_qty");
-                   modeldetail.addRow(new Object[]{ 
-                      res.getString("shd_id"), 
-                      res.getString("shd_soline"), 
-                      res.getString("shd_item"),
-                      res.getString("shd_custitem"),
-                      res.getString("shd_so"),
-                      res.getString("shd_po"),
-                      res.getString("shd_qty"),
-                      res.getString("shd_netprice")});
-                }
-               
-             
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+                        
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
     }
+   
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
     
     public void setLanguageTags(Object myobj) {
        JPanel panel = null;
@@ -239,7 +332,20 @@ public class ShipperDetBrowse extends javax.swing.JPanel {
     }
     
     public void initvars(String[] arg) {
-     
+     executeTask("dataInit", null);
+    }
+    
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
         tbtotqty.setText("0");
         tbtotsales.setText("0");
       
@@ -249,12 +355,92 @@ public class ShipperDetBrowse extends javax.swing.JPanel {
         DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
         DateFormat dfyear = new SimpleDateFormat("yyyy");
         DateFormat dfperiod = new SimpleDateFormat("M");
+       
         
         mymodel.setNumRows(0);
-        modeldetail.setNumRows(0);
         tablereport.setModel(mymodel);
-          
+        
+        
+        
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+        }
+        
+        tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+        tablereport.getColumnModel().getColumn(7).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+       
     }
+    
+    public String[] getBrowseView() {
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+       
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getShipperDetBrowseView"});
+        list.add(new String[]{"param1",tbfromshipper.getText()});
+        list.add(new String[]{"param2",tbtoshipper.getText()});
+        list.add(new String[]{"param3",tbfromcust.getText()});
+        list.add(new String[]{"param4",tbtocust.getText()});
+        list.add(new String[]{"param5",BlueSeerUtils.boolToString(cbinvoiced.isSelected())});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSHP"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getShipperDetBrowseView")};
+            }
+        } else {
+            jsonString = shpData.getShipperDetBrowseView(new String[]{
+                tbfromshipper.getText(),
+                tbtoshipper.getText(),
+                tbfromcust.getText(), 
+                tbtocust.getText(),
+                BlueSeerUtils.boolToString(cbinvoiced.isSelected())
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getShipperDetBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        mymodel.setNumRows(0);
+        double totqty = 0;
+        double totsales = 0;
+        
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            roData[i][5] = bsParseDouble(roData[i][5].toString());
+            totqty += bsParseDouble(roData[i][5].toString());
+            roData[i][6] = bsParseDouble(roData[i][6].toString());
+            roData[i][7] = bsParseDouble(roData[i][7].toString());
+            totsales += bsParseDouble(roData[i][7].toString());
+            i++;
+            mymodel.addRow(rowData);
+        }
+        tbtotqty.setText(currformatDouble(totqty));
+        tbtotsales.setText(currformatDouble(totsales));
+        }          
+        roData = null;
+    }   
+    
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -474,116 +660,15 @@ public class ShipperDetBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRunActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRunActionPerformed
-
-    
-try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-               mymodel.setNumRows(0);
-                 
-              
-                
-                 double totsales = 0;
-                 double sales = 0;
-                 double totqty = 0;
-                 
-            
-                // String site = ddsite.getSelectedItem().toString(); 
-                                  
-                 String shipperfrom = tbfromshipper.getText();
-                 String shipperto = tbtoshipper.getText();
-                 String custto = tbtocust.getText();
-                 String custfrom = tbfromcust.getText();
-                 String status = "";
-                 
-                 if (shipperfrom.isEmpty()) {
-                     shipperfrom = bsmf.MainFrame.lowchar;
-                 }
-                 if (shipperto.isEmpty()) {
-                     shipperto = bsmf.MainFrame.hichar;
-                 }
-                 if (custfrom.isEmpty()) {
-                     custfrom = bsmf.MainFrame.lowchar;
-                 }
-                 if (custto.isEmpty()) {
-                     custto = bsmf.MainFrame.hichar;
-                 }
-                 
-                  
-                      //must be type balance sheet
-                 if (cbinvoiced.isSelected()) {
-                   res = st.executeQuery("select sh_id, sh_cust, shd_item, shd_po, sh_shipdate, shd_qty, shd_netprice from ship_mstr " +
-                        " inner join ship_det on shd_id = sh_id where " +
-                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
-                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
-                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
-                        " sh_cust <= " + "'" + custto + "'" + " AND " +
-                        " sh_status = '1' " +
-                        " ;");
-                 } else {
-                   res = st.executeQuery("select sh_id, sh_cust, shd_item, shd_po, sh_shipdate, shd_qty, shd_netprice from ship_mstr " +
-                        " inner join ship_det on shd_id = sh_id where " +
-                        " sh_id >= " + "'" + shipperfrom + "'" + " AND " +
-                        " sh_id <= " + "'" + shipperto + "'" + " AND " +
-                        " sh_cust >= " + "'" + custfrom + "'" + " AND " +
-                        " sh_cust <= " + "'" + custto + "'"  +
-                        " ;");  
-                 }
-                
-                       while (res.next()) {
-                           sales = (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
-                         totsales = totsales + (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
-                         totqty = totqty + res.getDouble("shd_qty");
-                           mymodel.addRow(new Object[]{
-                                res.getString("sh_cust"),
-                               res.getString("sh_id"),
-                               res.getString("shd_po"),
-                                res.getString("sh_shipdate"),
-                                res.getString("shd_item"),
-                                res.getString("shd_qty"),
-                                res.getString("shd_netprice"),
-                                currformatDouble(sales)
-                            });
-                                
-                       }
-              
-                tbtotqty.setText(currformatDouble(totqty));
-                tbtotsales.setText(currformatDouble(totsales));
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-       
+        mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
     }//GEN-LAST:event_btRunActionPerformed
 
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
         
         int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
-        if ( col == 0) {
-                getdetail(tablereport.getValueAt(row, 1).toString());
-            
-        }
     }//GEN-LAST:event_tablereportMouseClicked
 
 

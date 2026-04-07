@@ -81,7 +81,8 @@ public class StatementReport extends javax.swing.JPanel {
  
     Object[][] rData;
     ArrayList<String[]> initDataSets = new ArrayList<>();
-    String defaultcurrency = "";
+    String defaultCurrency = "";
+    String defaultSite = "";
     String[] glCalDateArray;
     String jasper = "";
     boolean isLoad = false;
@@ -275,45 +276,7 @@ public class StatementReport extends javax.swing.JPanel {
     
     
     public void initvars(String[] arg) {
-        
-        isLoad = true;
-        mymodel.setRowCount(0);
-        
-        mytable.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(OVData.getDefaultCurrency())));
-        
-        java.util.Date now = new java.util.Date();
-        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-        DateFormat dfyear = new SimpleDateFormat("yyyy");
-        DateFormat dfperiod = new SimpleDateFormat("M");
-         
-        ddyear.removeAllItems();
-        ArrayList<String> years = getGLCalYearsRange();
-        for (String y : years) {
-            ddyear.addItem(y);
-        }
-        ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
-            
-        ddperfrom.removeAllItems();
-        for (int i = 1 ; i <= 12; i++) {
-            ddperfrom.addItem(bsFormatInt(i));
-        }
-        
-        ddperto.removeAllItems();
-        for (int i = 1 ; i <= 12; i++) {
-            ddperto.addItem(bsFormatInt(i));
-        }
-       
-        glCalDateArray = fglData.getGLCalForDate(now);
-        ddperfrom.setSelectedItem(bsNumber(glCalDateArray[1]));
-        ddperto.setSelectedItem(bsNumber(glCalDateArray[1]));
-        ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
-        datelabel.setText(list.get(0) + " To " + list.get(1));
-        
-        isLoad = false;
-        
         executeTask(BlueSeerUtils.dbaction.init, null);
-        
-        
     }
     
     public String[] getInitialization() {
@@ -345,7 +308,7 @@ public class StatementReport extends javax.swing.JPanel {
             }
             
             if (s[0].equals("currency")) {
-              defaultcurrency = s[1];  
+              defaultCurrency = s[1];  
             }
         }
         
@@ -357,8 +320,41 @@ public class StatementReport extends javax.swing.JPanel {
            
         mytable.setModel(mymodel);
         mytable.getTableHeader().setReorderingAllowed(false);
-        mytable.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultcurrency)));
-       isLoad = false;
+        mytable.getColumnModel().getColumn(2).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+       
+      
+        
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dfyear = new SimpleDateFormat("yyyy");
+        DateFormat dfperiod = new SimpleDateFormat("M");
+         
+        ddyear.removeAllItems();
+        ArrayList<String> years = getGLCalYearsRange();
+        for (String y : years) {
+            ddyear.addItem(y);
+        }
+        ddyear.setSelectedItem(bsNumber(dfyear.format(now)));
+            
+        ddperfrom.removeAllItems();
+        for (int i = 1 ; i <= 12; i++) {
+            ddperfrom.addItem(bsFormatInt(i));
+        }
+        
+        ddperto.removeAllItems();
+        for (int i = 1 ; i <= 12; i++) {
+            ddperto.addItem(bsFormatInt(i));
+        }
+       
+        glCalDateArray = fglData.getGLCalForDate(now);
+        ddperfrom.setSelectedItem(bsNumber(glCalDateArray[1]));
+        ddperto.setSelectedItem(bsNumber(glCalDateArray[1]));
+        ArrayList<String> list = fglData.getGLCalForPeriodRange(bsParseInt(ddyear.getSelectedItem().toString()), bsParseInt(ddperfrom.getSelectedItem().toString()), bsParseInt(ddperto.getSelectedItem().toString()));
+        datelabel.setText(list.get(0) + " To " + list.get(1));
+        
+        
+        
+      isLoad = false;
        
        ddprofile.setSelectedIndex(0);
        jasper = getGLICMetaValue("header", "jasper", ddprofile.getSelectedItem().toString());

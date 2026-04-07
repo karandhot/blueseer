@@ -383,7 +383,7 @@ public class RecvMaint extends javax.swing.JPanel implements IBlueSeerV {
         isLoad = true;
         
         if (init) {
-          initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors,warehouses,locations,apc_autovoucher,serialize");
+          initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "vendors,warehouses,locations,ap_ctrl,serialize");
         }
         requireWHLoc = BlueSeerUtils.ConvertStringToBool(getSysMetaValue("system", "inventorycontrol", "operation_whloc_required"));
         

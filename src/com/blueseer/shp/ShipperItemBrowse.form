@@ -180,8 +180,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="tbtonbr" alignment="1" min="-2" pref="100" max="-2" attributes="0"/>
-                          <Component id="tbfromnbr" min="-2" pref="100" max="-2" attributes="0"/>
+                          <Component id="tbtoshipper" alignment="1" min="-2" pref="100" max="-2" attributes="0"/>
+                          <Component id="tbfromshipper" min="-2" pref="100" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -230,7 +230,7 @@
                               <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="btRun" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="tbfromnbr" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="tbfromshipper" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="tbfromcust" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="tbcsv" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -245,7 +245,7 @@
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="tbtonbr" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="tbtoshipper" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="tbtocust" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="btclear" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -297,9 +297,9 @@
                 <Property name="name" type="java.lang.String" value="lblfrompo" noResource="true"/>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="tbfromnbr">
+            <Component class="javax.swing.JTextField" name="tbfromshipper">
             </Component>
-            <Component class="javax.swing.JTextField" name="tbtonbr">
+            <Component class="javax.swing.JTextField" name="tbtoshipper">
             </Component>
             <Component class="javax.swing.JTextField" name="tbfromcust">
             </Component>

@@ -29,6 +29,8 @@ package com.blueseer.srv;
 import com.blueseer.adm.admData;
 import com.blueseer.shp.shpData;
 import static com.blueseer.shp.shpData.addUpdateShipMeta;
+import static com.blueseer.shp.shpData.getShipperDetBrowseView;
+import static com.blueseer.shp.shpData.getShipperItemBrowseView;
 import static com.blueseer.shp.shpData.getShipperMstrSet;
 import static com.blueseer.shp.shpData.getShpRptPickerData;
 import com.blueseer.utl.BlueSeerUtils;
@@ -145,7 +147,7 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
             response.getWriter().print(r);
             break; 
             
-        case "getShipperBrowseView" : 
+        case "getShipperBrowseView" : {
             response.getWriter().print(shpData.getShipperBrowseView(request.getHeader("param1"), 
                     request.getHeader("param2"),
                     request.getHeader("param3"),
@@ -154,6 +156,34 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
                     request.getHeader("param6"),
                     request.getHeader("param7") )); 
             break;
+        }
+            
+        case "getShipperDetBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4"), 
+               request.getHeader("param5")
+               };     
+        response.getWriter().print(getShipperDetBrowseView(it));  
+        break;
+        }     
+        
+        case "getShipperItemBrowseView" : {
+        String[] it = new String[]{
+               request.getHeader("param1"), 
+               request.getHeader("param2"), 
+               request.getHeader("param3"), 
+               request.getHeader("param4"), 
+               request.getHeader("param5"),
+               request.getHeader("param6"),
+               request.getHeader("param7"),
+               request.getHeader("param8")
+               };     
+        response.getWriter().print(getShipperItemBrowseView(it));  
+        break;
+        }     
             
         case "getShipperBrowseDetail" :
             response.getWriter().print(shpData.getShipperBrowseDetail(request.getHeader("param1")));  

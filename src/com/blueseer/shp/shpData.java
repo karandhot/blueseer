@@ -1809,6 +1809,139 @@ public class shpData {
        return jsonarray.toString(); 
     }
     
+    public static String getShipperDetBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                keys[0] = (keys[0].isBlank()) ? bsmf.MainFrame.lowchar : keys[0]; 
+                keys[1] = (keys[1].isBlank()) ? bsmf.MainFrame.hichar : keys[1];
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                
+                
+                if (keys[4].equals("1")) {
+                    res = st.executeQuery("select sh_id, sh_cust, shd_item, shd_po, sh_shipdate, shd_qty, shd_netprice from ship_mstr " +
+                        " inner join ship_det on shd_id = sh_id where " +
+                        " sh_id >= " + "'" + keys[0] + "'" + " AND " +
+                        " sh_id <= " + "'" + keys[1] + "'" + " AND " +
+                        " sh_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " sh_cust <= " + "'" + keys[3] + "'" + " AND " +
+                        " sh_status = '1' " +
+                        " ;");
+                  } else {
+                    res = st.executeQuery("select sh_id, sh_cust, shd_item, shd_po, sh_shipdate, shd_qty, shd_netprice from ship_mstr " +
+                        " inner join ship_det on shd_id = sh_id where " +
+                        " sh_id >= " + "'" + keys[0] + "'" + " AND " +
+                        " sh_id <= " + "'" + keys[1] + "'" + " AND " +
+                        " sh_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " sh_cust <= " + "'" + keys[3] + "'" + 
+                        " ;");
+                  }
+                
+                    double sales = 0.00;
+                    while (res.next()) {
+                        sales = (res.getDouble("shd_qty") * res.getDouble("shd_netprice"));
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("sh_cust"));
+                        rowArray.put(res.getString("sh_id"));
+                        rowArray.put(res.getString("shd_po"));
+                        rowArray.put(res.getString("sh_shipdate"));
+                        rowArray.put(res.getString("shd_item"));
+                        rowArray.put(res.getString("shd_qty")); 
+                        rowArray.put(res.getString("shd_netprice"));
+                        rowArray.put(currformatDouble(sales));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    public static String getShipperItemBrowseView(String[] keys) {
+        JSONArray jsonarray = new JSONArray();
+        try {
+            
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            
+            try{
+                keys[0] = (keys[0].isBlank()) ? bsmf.MainFrame.lowchar : keys[0]; 
+                keys[1] = (keys[1].isBlank()) ? bsmf.MainFrame.hichar : keys[1];
+                keys[2] = (keys[2].isBlank()) ? bsmf.MainFrame.lowchar : keys[2];
+                keys[3] = (keys[3].isBlank()) ? bsmf.MainFrame.hichar : keys[3];
+                keys[4] = (keys[4].isBlank()) ? bsmf.MainFrame.lowchar : keys[4];
+                keys[5] = (keys[5].isBlank()) ? bsmf.MainFrame.hichar : keys[5];
+                
+                
+                res = st.executeQuery("select shd_item, shd_so, shd_date, shd_qty, shd_netprice, shd_serial, sh_cust, shd_id from ship_det " +
+                        " inner join ship_mstr on sh_id = shd_id where " +
+                        " shd_id >= " + "'" + keys[0] + "'" + " AND " +
+                        " shd_id <= " + "'" + keys[1] + "'" + " AND " +
+                        " shd_item >= " + "'" + keys[4] + "'" + " AND " +
+                        " shd_item <= " + "'" + keys[5] + "'" + " AND " +        
+                        " shd_date >= " + "'" + keys[6] + "'" + " AND " +
+                        " shd_date <= " + "'" + keys[7] + "'" + " AND " +
+                        " sh_cust >= " + "'" + keys[2] + "'" + " AND " +
+                        " sh_cust <= " + "'" + keys[3] + "'" + 
+                        " order by shd_id desc;");
+                
+                    while (res.next()) {
+                        JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("shd_id"));
+                        rowArray.put(res.getString("shd_so"));
+                        rowArray.put(res.getString("sh_cust"));
+                        rowArray.put(res.getString("shd_date"));
+                        rowArray.put(res.getString("shd_item"));
+                        rowArray.put(res.getString("shd_serial"));
+                        rowArray.put(res.getString("shd_qty")); 
+                        rowArray.put(res.getString("shd_netprice"));
+                        jsonarray.put(rowArray);
+                    }
+           }
+            catch (SQLException s){
+                 MainFrame.bslog(s);
+             } finally {
+               if (res != null) res.close();
+               if (st != null) st.close();
+               con.close();
+            }
+        }
+        catch (Exception e){
+            MainFrame.bslog(e);
+            
+        }
+       return jsonarray.toString(); 
+    }
+    
+    
     public static String getShipperPrintData(String key, String keytype) {
         JSONArray jsonarray = new JSONArray();
         try {
