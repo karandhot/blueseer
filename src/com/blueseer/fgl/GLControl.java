@@ -67,7 +67,7 @@ public class GLControl extends javax.swing.JPanel implements IBlueSeerc {
         String defaultSite = "";
         String defaultCurrency = "";
         boolean canUpdate = false;
-        private static ArrayList<String> accounts = null;
+        private static ArrayList<String> accounts = new ArrayList<>();
                 private static gl_ctrl x = null;
     
     // interface functions implemented

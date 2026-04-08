@@ -45,6 +45,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
 import static com.blueseer.utl.BlueSeerUtils.jsonToData;
@@ -66,6 +67,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -75,7 +77,7 @@ import javax.swing.table.TableColumn;
  * @author vaughnte
  */
 public class CusRptPicker extends javax.swing.JPanel {
-    String func = null;
+   
     /* NOTES:
     These notes apply to all RptPicker classes.
     
@@ -93,9 +95,16 @@ public class CusRptPicker extends javax.swing.JPanel {
     per each sub report.   I'm all ears if have another option.  :)
     
     */
+    String func = null;
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     Map<String, String> jaspermap = new HashMap<String, String>();
     String jasperGroup = "CusRptGroup";
-    boolean isLoad = false;
     
      class renderer1 extends DefaultTableCellRenderer {
         
@@ -155,6 +164,65 @@ public class CusRptPicker extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     
     class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -222,29 +290,56 @@ public class CusRptPicker extends javax.swing.JPanel {
     
     
     public void initvars(String[] arg) {
+      executeTask("dataInit", null);
+    }
+   
+    public String[] getInitialization() {
+        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "jaspergroups=" + jasperGroup);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
       isLoad = true;
       ddreport.removeAllItems();
       jaspermap.clear();
-      int k = 0;
-      ArrayList<String[]> list = OVData.getJasperByGroup(jasperGroup);
-      for (String[] x : list) { // list is string of desc, func, format
-              jaspermap.put(x[0], x[2]); // desc, format
-              ddreport.addItem(x[0]); // desc
-          k++;
-      }
       ddreport.insertItemAt("", 0);
       ddreport.setSelectedIndex(0);
       resetVariables();
       hidePanels();
-      
+           
       rbactive.setSelected(true);
       rbinactive.setSelected(false);
       buttonGroup1.add(rbactive);
       buttonGroup1.add(rbinactive);
       ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
-     isLoad = false;
+       
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("jaspergroups")) {
+              String[] z = s[1].split(",", -1);
+              jaspermap.put(z[0], z[2]); // desc, format
+              ddreport.addItem(z[0]); // desc 
+            }
+        }
+        
+        
+        
+       isLoad = false;
     }
-   
+    
     
     
     /* misc methods */   
@@ -459,46 +554,34 @@ public class CusRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+         
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getCusRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                res = st.executeQuery("SELECT cm_code, cm_name, " +
-                    " cm_phone, cm_email " +
-                    "from cm_mstr " +
-                    " where cast(cm_code as decimal) >= " + "'" + from + "'" +
-                    " and cast(cm_code as decimal) <= " + "'" + to + "'" +
-                    "order by cm_code ;");
-
-                while (res.next()) {
-                    mymodel.addRow(new Object[]{ 
-                        BlueSeerUtils.clickflag,  // imageicon always column 1
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("cm_phone"),
-                        res.getString("cm_email")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = cusData.getCusRptPickerData(new String[]{
+                func,
+                from,
+                to
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
-      
+        }    
+        
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
             tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
@@ -558,50 +641,32 @@ public class CusRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getCusRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                 res = st.executeQuery("SELECT cm_code, cm_market, cm_name,  " +
-                        " cm_terms, cm_bank, cm_curr, cm_ar_acct, cm_ar_cc, " +
-                        " case when cm_onhold = '0' then 'false' else 'true' end as 'cm_onhold' " +
-                        "from cm_mstr " +
-                        " where cast(cm_code as decimal) >= " + "'" + from + "'" +
-                        " and cast(cm_code as decimal) <= " + "'" + to + "'" +
-                        "order by cm_code ;");
-
-                while (res.next()) {
-                   
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickflag,
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("cm_terms"),
-                        res.getString("cm_bank"),
-                        res.getString("cm_curr"),
-                        res.getString("cm_ar_acct"),
-                        res.getString("cm_ar_cc"),
-                        res.getString("cm_onhold")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = cusData.getCusRptPickerData(new String[]{
+                func,
+                from,
+                to
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }    
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -662,49 +727,32 @@ public class CusRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getCusRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                 res = st.executeQuery("SELECT cm_code, cm_name,  " +
-                        " cms_shipto, cms_name, cms_line1, cms_city, cms_state, cms_zip " +
-                          "from cm_mstr inner join cms_det on cms_code = cm_code " +
-                        " where cast(cm_code as decimal) >= " + "'" + from + "'" +
-                        " and cast(cm_code as decimal) <= " + "'" + to + "'" +
-                        "order by cm_code ;");
-
-                while (res.next()) {
-                   
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickflag,
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("cms_shipto"),
-                        res.getString("cms_name"),
-                        res.getString("cms_line1"),
-                        res.getString("cms_city"),
-                        res.getString("cms_state"),
-                        res.getString("cms_zip")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = cusData.getCusRptPickerData(new String[]{
+                func,
+                from,
+                to
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }    
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -776,49 +824,36 @@ public class CusRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getCusRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});  
+        list.add(new String[]{"param3",fromdate});
+        list.add(new String[]{"param4",todate});
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                 res = st.executeQuery("SELECT cm_code, cm_name,  " +
-                        " sum(shd_qty * shd_netprice) as 'total' " +
-                          "from cm_mstr inner join ship_mstr on sh_cust = cm_code " +
-                        " inner join ship_det on shd_id = sh_id and sh_status = '1' " +
-                        " where cast(cm_code as decimal) >= " + "'" + from + "'" +
-                        " and cast(cm_code as decimal) <= " + "'" + to + "'" +
-                        " and sh_shipdate >= " + "'" + fromdate + "'" +
-                        " and sh_shipdate <= " + "'" + todate + "'" +
-                        " group by cm_code, cm_name order by cm_code ;");
-
-                while (res.next()) {
-                   
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickflag,
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        fromdate,
-                        todate,
-                        BlueSeerUtils.bsformat("", res.getString("total"), "2")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = cusData.getCusRptPickerData(new String[]{
+                func,
+                from,
+                to,
+                fromdate,
+                todate
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }    
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);
@@ -879,49 +914,32 @@ public class CusRptPicker extends javax.swing.JPanel {
               }  
                 }; 
             
-      try{
-            Connection con = null;
-            if (ds != null) {
-            con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+      String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getCusRptPickerData"});
+        list.add(new String[]{"func",func});
+        list.add(new String[]{"param1",from});
+        list.add(new String[]{"param2",to});        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServCUS"); 
+            } catch (IOException ex) {
+                bslog(ex);
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try{   
-                 res = st.executeQuery("SELECT cm_code, cm_name,  " +
-                        " cup_item, cup_citem, cup_citem2, cup_sku, cup_upc, cup_misc " +
-                          "from cm_mstr inner join cup_mstr on cup_cust = cm_code " +
-                        " where cast(cm_code as decimal) >= " + "'" + from + "'" +
-                        " and cast(cm_code as decimal) <= " + "'" + to + "'" +
-                        "order by cm_code ;");
-
-                while (res.next()) {
-                   
-                    mymodel.addRow(new Object[]{ BlueSeerUtils.clickflag,
-                        res.getString("cm_code"),
-                        res.getString("cm_name"),
-                        res.getString("cup_item"),
-                        res.getString("cup_citem"),
-                        res.getString("cup_sku"),
-                        res.getString("cup_upc"),
-                        res.getString("cup_citem2"),
-                        res.getString("cup_misc")
-                            });
-                }
-           }
-            catch (SQLException s){
-                 MainFrame.bslog(s);
-              } finally {
-               if (res != null) res.close();
-               if (st != null) st.close();
-               if (con != null) con.close();
+        } else {
+            jsonString = cusData.getCusRptPickerData(new String[]{
+                func,
+                from,
+                to
+            });
+        }
+        
+        Object[][] roData = jsonToData(jsonString);
+        if (roData != null) {
+            for (Object[] rowData : roData) {
+                mymodel.addRow(rowData);
             }
-        }
-        catch (Exception e){
-            MainFrame.bslog(e);
-            
-        }
+        }    
       
       // now assign tablemodel to table
             tablereport.setModel(mymodel);

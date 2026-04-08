@@ -27,13 +27,7 @@ package com.blueseer.inv;
 
 import bsmf.MainFrame;
 import com.blueseer.utl.BlueSeerUtils;
-import static bsmf.MainFrame.backgroundcolor;
-import static bsmf.MainFrame.backgroundpanel;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
 import com.blueseer.adm.admData;
 import static com.blueseer.inv.invData.addUpdateINVCtrl;
 import static com.blueseer.inv.invData.getINVCtrl;
@@ -43,15 +37,7 @@ import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
 import com.blueseer.utl.IBlueSeerc;
 import com.blueseer.utl.OVData;
 import static com.blueseer.utl.OVData.getSysMetaData;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.GradientPaint;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -77,7 +63,7 @@ public class InventoryCtrl extends javax.swing.JPanel implements IBlueSeerc {
         String defaultSite = "";
         String defaultCurrency = "";
         boolean canUpdate = false;
-        private static ArrayList<String> accounts = null;
+        private static ArrayList<String> accounts = new ArrayList<>();
         private static inv_ctrl x = null;
     
     public InventoryCtrl() {

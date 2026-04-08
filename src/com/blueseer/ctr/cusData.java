@@ -3013,8 +3013,8 @@ public class cusData {
                     " cm_city, cm_state, cm_zip, cm_market, cm_phone, cm_email, " +
                     " cm_terms, cm_bank, cm_curr, cm_ar_acct, cm_onhold " +
                     "from cm_mstr " +
-                    " where cast(cm_code as decimal) >= " + "'" + keys[1] + "'" +
-                    " and cast(cm_code as decimal) <= " + "'" + keys[2] + "'" +
+                    " where cm_code >= " + "'" + keys[1] + "'" +
+                    " and cm_code <= " + "'" + keys[2] + "'" +
                     "order by cm_code ;");
                     while (res.next()) {
                             i++;
@@ -3030,6 +3030,129 @@ public class cusData {
 
                     } 
                 }
+                
+                if (keys[0].equals("custPhoneEmailByRange")) {
+                res = st.executeQuery("SELECT cm_code, cm_name, " +
+                    " cm_phone, cm_email " +
+                    "from cm_mstr " +
+                    " where cm_code >= " + "'" + keys[1] + "'" +
+                    " and cm_code <= " + "'" + keys[2] + "'" +
+                    "order by cm_code ;");
+               
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("cm_phone"));
+                            rowArray.put(res.getString("cm_email"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("custFinanceInfoByRange")) {
+                    res = st.executeQuery("SELECT cm_code, cm_market, cm_name,  " +
+                        " cm_terms, cm_bank, cm_curr, cm_ar_acct, cm_ar_cc, " +
+                        " case when cm_onhold = '0' then 'false' else 'true' end as 'cm_onhold' " +
+                        "from cm_mstr " +
+                        " where cm_code >= " + "'" + keys[1] + "'" +
+                        " and cm_code <= " + "'" + keys[2] + "'" +
+                        "order by cm_code ;");
+              
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("cm_terms"));
+                            rowArray.put(res.getString("cm_bank"));
+                            rowArray.put(res.getString("cm_curr"));
+                            rowArray.put(res.getString("cm_ar_acct"));
+                            rowArray.put(res.getString("cm_ar_cc"));
+                            rowArray.put(res.getString("cm_onhold"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("custShipTosByRange")) {
+                    res = st.executeQuery("SELECT cm_code, cm_name,  " +
+                        " cms_shipto, cms_name, cms_line1, cms_city, cms_state, cms_zip " +
+                          "from cm_mstr inner join cms_det on cms_code = cm_code " +
+                        " where cm_code >= " + "'" + keys[1] + "'" +
+                        " and cm_code <= " + "'" + keys[2] + "'" +
+                        "order by cm_code ;");
+              
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("cms_shipto"));
+                            rowArray.put(res.getString("cms_name"));
+                            rowArray.put(res.getString("cms_line1"));
+                            rowArray.put(res.getString("cms_city"));
+                            rowArray.put(res.getString("cms_state"));
+                            rowArray.put(res.getString("cms_zip"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("custTotalSalesByRange")) {
+                    res = st.executeQuery("SELECT cm_code, cm_name,  " +
+                        " sum(shd_qty * shd_netprice) as 'total' " +
+                          "from cm_mstr inner join ship_mstr on sh_cust = cm_code " +
+                        " inner join ship_det on shd_id = sh_id and sh_status = '1' " +
+                        " where cm_code >= " + "'" + keys[1] + "'" +
+                        " and cm_code <= " + "'" + keys[2] + "'" +
+                        " and sh_shipdate >= " + "'" + keys[3] + "'" +
+                        " and sh_shipdate <= " + "'" + keys[4] + "'" +
+                        " group by cm_code, cm_name order by cm_code ;");
+              
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(keys[3]);
+                            rowArray.put(keys[4]);
+                            rowArray.put(BlueSeerUtils.bsformat("", res.getString("total"), "2"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
+                if (keys[0].equals("custXrefByRange")) {
+                    res = st.executeQuery("SELECT cm_code, cm_name,  " +
+                        " cup_item, cup_citem, cup_citem2, cup_sku, cup_upc, cup_misc " +
+                          "from cm_mstr inner join cup_mstr on cup_cust = cm_code " +
+                        " where cm_code >= " + "'" + keys[1] + "'" +
+                        " and cm_code <= " + "'" + keys[2] + "'" +
+                        "order by cm_code ;");
+              
+                    while (res.next()) {
+                            i++;
+                            JSONArray rowArray = new JSONArray(); 
+                            rowArray.put("select");
+                            rowArray.put(res.getString("cm_code"));
+                            rowArray.put(res.getString("cm_name"));
+                            rowArray.put(res.getString("cup_item"));
+                            rowArray.put(res.getString("cup_citem"));
+                            rowArray.put(res.getString("cup_sku"));
+                            rowArray.put(res.getString("cup_upc"));
+                            rowArray.put(res.getString("cup_citem2"));
+                            rowArray.put(res.getString("cup_misc"));
+                            jsonarray.put(rowArray);
+
+                    } 
+                }
+                
                 
             } catch (SQLException s) {
                 MainFrame.bslog(s);

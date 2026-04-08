@@ -3888,8 +3888,8 @@ public class ordData {
                     " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
                     " inner join cm_mstr on cm_code = so_cust " +
                     " where " +
-                    " so_due_date >= " + "'" + keys[0] + "'" +
-                    " and so_due_date <= " + "'" + keys[1] + "'" +         
+                    " so_due_date >= " + "'" + keys[1] + "'" +
+                    " and so_due_date <= " + "'" + keys[2] + "'" +         
                     " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
                 
                     while (res.next()) {
@@ -3915,8 +3915,8 @@ public class ordData {
                     " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
                     " inner join cm_mstr on cm_code = so_cust " +
                     " where " +
-                    " so_ord_date >= " + "'" + keys[0] + "'" +
-                    " and so_ord_date <= " + "'" + keys[1] + "'" +         
+                    " so_ord_date >= " + "'" + keys[1] + "'" +
+                    " and so_ord_date <= " + "'" + keys[2] + "'" +         
                     " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
                 
                     while (res.next()) {
@@ -4026,8 +4026,8 @@ public class ordData {
                     " from so_mstr inner join sod_det on so_nbr = sod_nbr " +
                     " inner join cm_mstr on cm_code = so_cust " +
                     " where " +
-                    " so_cust >= " + "'" + keys[0] + "'" +
-                    " and so_cust <= " + "'" + keys[1] + "'" +   
+                    " so_cust >= " + "'" + keys[1] + "'" +
+                    " and so_cust <= " + "'" + keys[2] + "'" +   
                     " and so_status = " + "'" + "onhold" + "'" +       
                     " group by so_nbr, so_po, so_status, so_ord_date, so_due_date, cm_code, cm_name order by so_nbr ;");
                 
@@ -4062,7 +4062,7 @@ public class ordData {
                             i++;
                             JSONArray rowArray = new JSONArray(); 
                             rowArray.put("select");
-                            rowArray.put(res.getString("so_nbr"));
+                            rowArray.put(res.getString("sod_nbr"));
                             rowArray.put(res.getString("shd_po"));
                             rowArray.put(res.getString("sh_id"));
                             rowArray.put(res.getString("sh_shipdate"));

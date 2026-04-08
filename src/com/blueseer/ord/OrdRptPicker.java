@@ -53,6 +53,7 @@ import static bsmf.MainFrame.reinitpanels;
 import static bsmf.MainFrame.tags;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
+import com.blueseer.adm.admData;
 import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getClassLabelTag;
@@ -82,6 +83,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -92,7 +94,6 @@ import javax.swing.table.TableColumn;
  */
 public class OrdRptPicker extends javax.swing.JPanel {
 
-    String func = null;
     /* NOTES:
     These notes apply to all RptPicker classes.
     
@@ -110,9 +111,16 @@ public class OrdRptPicker extends javax.swing.JPanel {
     per each sub report.   I'm all ears if have another option.  :)
     
     */
+    String func = null;
+    boolean isLoad = false;
+    boolean canUpdate = false;
+    boolean isAutoPost = false;
+    ArrayList<String[]> initDataSets = null;
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String defaultCC = "";
     Map<String, String> jaspermap = new HashMap<String, String>();
     String jasperGroup = "OrdRptGroup";
-    boolean isLoad = false;
     
      class renderer1 extends DefaultTableCellRenderer {
         
@@ -172,6 +180,65 @@ public class OrdRptPicker extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
+    public void executeTask(String x, String[] y) { 
+      
+        class Task extends SwingWorker<String[], Void> {
+         
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                default:
+                    message = new String[]{"1", "unknown action"};
+            }
+            
+            
+            
+            
+            return message;
+        }
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }            
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
+      
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
+       
+    }
+    
     
     class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -239,16 +306,22 @@ public class OrdRptPicker extends javax.swing.JPanel {
     
     
     public void initvars(String[] arg) {
+      executeTask("dataInit", null);
+    }
+   
+    public String[] getInitialization() {
+        initDataSets  = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "jaspergroups=" + jasperGroup);
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
       isLoad = true;
       ddreport.removeAllItems();
       jaspermap.clear();
-      int k = 0;
-      ArrayList<String[]> list = OVData.getJasperByGroup(jasperGroup);
-      for (String[] x : list) { // list is string of desc, func, format
-              jaspermap.put(x[0], x[2]); // desc, format
-              ddreport.addItem(x[0]); // desc
-          k++;
-      }
       ddreport.insertItemAt("", 0);
       ddreport.setSelectedIndex(0);
       resetVariables();
@@ -259,9 +332,30 @@ public class OrdRptPicker extends javax.swing.JPanel {
       buttonGroup1.add(rbactive);
       buttonGroup1.add(rbinactive);
       ((DefaultTableModel)tablereport.getModel()).setRowCount(0);
-     isLoad = false;
+       
+        
+        for (String[] s : initDataSets) {
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1];  
+            }
+            if (s[0].equals("site")) {
+              defaultSite = s[1];  
+            }
+            if (s[0].equals("canupdate")) {
+              canUpdate = BlueSeerUtils.ConvertStringToBool(s[1]);  
+            }
+            if (s[0].equals("jaspergroups")) {
+              String[] z = s[1].split(",", -1);
+              jaspermap.put(z[0], z[2]); // desc, format
+              ddreport.addItem(z[0]); // desc 
+            }
+        }
+        
+        
+        
+       isLoad = false;
     }
-   
+    
     
     
     /* misc methods */   

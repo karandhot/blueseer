@@ -67,7 +67,7 @@ public class CustControl extends javax.swing.JPanel implements IBlueSeerc {
         String defaultSite = "";
         String defaultCurrency = "";
         boolean canUpdate = false;
-        private static ArrayList<String> accounts = null;
+        private static ArrayList<String> accounts = new ArrayList<>();
                 private static cm_ctrl x = null;
     
     

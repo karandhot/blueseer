@@ -95,7 +95,7 @@ public class OrderControl extends javax.swing.JPanel implements IBlueSeerc {
         String defaultSite = "";
         String defaultCurrency = "";
         boolean canUpdate = false;
-        private static ArrayList<String> accounts = null;
+        private static ArrayList<String> accounts = new ArrayList<>();
                 private static order_ctrl x = null;
     
     

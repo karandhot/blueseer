@@ -74,7 +74,7 @@ public class ARControl extends javax.swing.JPanel implements IBlueSeerc {
         String defaultSite = "";
         String defaultCurrency = "";
         boolean canUpdate = false;
-        private static ArrayList<String> accounts = null;
+        private static ArrayList<String> accounts = new ArrayList<>();
         private static ar_ctrl x = null;
     
     
