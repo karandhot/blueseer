@@ -35,6 +35,7 @@ import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import static com.blueseer.hrm.hrmData._getEmployeeMstr;
 import com.blueseer.hrm.hrmData.emp_mstr;
+import com.blueseer.inv.invData;
 import com.blueseer.pur.purData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
@@ -1020,6 +1021,8 @@ public class prdData {
         }
         return jsonarray.toString(); 
     }
+   
+   
    
    public static String[] getJobClockInTime(int plan, int op, String empnbr) {
            // get billto specific data

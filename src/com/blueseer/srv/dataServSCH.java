@@ -216,6 +216,57 @@ protected void doGet(HttpServletRequest request, HttpServletResponse response)
         break;
         } 
         
+        case "getMRPBrowseView" : { 
+        response.getWriter().print(schData.getMRPBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4"),
+                    request.getHeader("param5"),
+                    request.getHeader("param6"),
+                    request.getHeader("param7"),
+                    request.getHeader("param8"),
+                    request.getHeader("param9"),
+                    request.getHeader("param10"),
+                    request.getHeader("param11"),
+                    request.getHeader("param12"),
+                    request.getHeader("param13"),
+                    request.getHeader("param14")})); 
+        break;
+        } 
+        
+        case "getMRPDetBrowseView" : { 
+        response.getWriter().print(schData.getMRPDetBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")})); 
+        break;
+        } 
+        
+        case "getMRPDetPlanBrowseView" : { 
+        response.getWriter().print(schData.getMRPDetPlanBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")})); 
+        break;
+        } 
+        
+        case "getMRPDetPurchBrowseView" : { 
+        response.getWriter().print(schData.getMRPDetPurchBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")})); 
+        break;
+        } 
+        
+        case "getMRPDetTransBrowseView" : { 
+        response.getWriter().print(schData.getMRPDetTransBrowseView(new String[]{request.getHeader("param1"), 
+                    request.getHeader("param2"),
+                    request.getHeader("param3"),
+                    request.getHeader("param4")})); 
+        break;
+        } 
+        
+        
         case "updatePlanStatus" : { 
             updatePlanStatus(request.getHeader("param1"), request.getHeader("param2"));
             break;  

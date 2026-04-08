@@ -26,55 +26,48 @@ SOFTWARE.
 package com.blueseer.sch;
 
 import bsmf.MainFrame;
-import static bsmf.MainFrame.db;
-import static bsmf.MainFrame.ds;
-import static bsmf.MainFrame.pass;
+import static bsmf.MainFrame.bslog;
 import static bsmf.MainFrame.tags;
-import static bsmf.MainFrame.url;
-import static bsmf.MainFrame.user;
-import com.blueseer.inv.invData;
+import com.blueseer.adm.admData;
+import static com.blueseer.sch.schData.getMRPDetBrowseView;
+import static com.blueseer.sch.schData.getMRPDetPlanBrowseView;
+import static com.blueseer.sch.schData.getMRPDetPurchBrowseView;
+import static com.blueseer.sch.schData.getMRPDetTransBrowseView;
 import com.blueseer.utl.BlueSeerUtils;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
+import static com.blueseer.utl.BlueSeerUtils.dropColumn;
 import static com.blueseer.utl.BlueSeerUtils.getGlobalColumnTag;
-import static com.blueseer.utl.BlueSeerUtils.getMessageTag;
-import com.blueseer.utl.OVData;
-import com.toedter.calendar.DateUtil;
+import static com.blueseer.utl.BlueSeerUtils.jsonToData;
+import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import java.awt.Color;
 import java.awt.Component;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.IOException;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -82,6 +75,16 @@ import javax.swing.table.TableColumnModel;
  */
 public class MRPBrowse extends javax.swing.JPanel {
 
+    public String rsData; 
+    Object[][] roData;
+    Object[][] roDataTrans;
+    ArrayList<String[]> initDataSets = new ArrayList<>();
+    String defaultSite = "";
+    String defaultCurrency = "";
+    String startdate = "";
+    String enddate = "";
+    
+    
     MyTableModel mymodel = new MyTableModel(new Object[][]{},
                     new String[]{getGlobalColumnTag("select"),
                         getGlobalColumnTag("item"), 
@@ -117,10 +120,7 @@ public class MRPBrowse extends javax.swing.JPanel {
                         getGlobalColumnTag("date"), 
                         getGlobalColumnTag("qty")});
     
-    String startdate = "";
-    String enddate = "";
-    String cumstartdate = "";
-    String cumenddate = "";
+    
     /**
      * Creates new form MRPBrowse1
      */
@@ -129,291 +129,107 @@ public class MRPBrowse extends javax.swing.JPanel {
         setLanguageTags(this);
     }
 
-    
-        public void getdetail(String part) {
+    public void executeTask(String x, String[] y) { 
       
+        class Task extends SwingWorker<String[], Void> {
          
-         double total = 0.00;
-         
-        Set<String> parents = new LinkedHashSet<String>();
-        parents = OVData.getpsmstrparents2(part);
-        List<String> sortedList = new ArrayList<>(parents);
-        Collections.sort(sortedList);
-         
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
+          String action = "";
+          String[] key = null;
+          
+          public Task(String action, String[] key) { 
+              this.action = action;
+              this.key = key;
+          }     
+            
+        @Override
+        public String[] doInBackground() throws Exception {
+            String[] message = new String[2];
+            message[0] = "";
+            message[1] = "";
+            
+            rsData = "";
+            
+            
+            switch(this.action) {
+                case "dataInit":
+                    message = getInitialization();
+                    break;
+                
+                case "getBrowseView":
+                    message = getBrowseView();
+                    break;   
+                    
+                case "getBrowseViewDet":
+                    message = getBrowseViewDet(key[0]);
+                    break; 
+                    
+                case "getBrowseViewDetPlan":
+                    message = getBrowseViewDetPlan(key[0]);
+                    break;
+                    
+                case "getBrowseViewDetPurch":
+                    message = getBrowseViewDetPurch(key[0]);
+                    break;
+                
+                case "getBrowseViewDetTrans":
+                    message = getBrowseViewDetTrans(key[0]);
+                    break;
+                    
+                default:
+                    message = new String[]{"1", "unknown action"};
             }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-                String blanket = "";
-                
-                
-                
-               if (! sortedList.isEmpty()) { 
-               for (String line : sortedList) {
-                res = st.executeQuery("select * from sod_det " +
-                        " where sod_item = " + "'" + line + "'" + 
-                        " and sod_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                        " and sod_due_date >= "  + "'" + startdate + "'" + 
-                        " and sod_due_date <= "  + "'" + enddate + "'" + 
-                        " order by sod_due_date " +   ";");
-                while (res.next()) {
-                   modelorder.addRow(new Object[]{ 
-                      res.getString("sod_item"), 
-                       res.getString("sod_nbr"),
-                       "SORD",
-                       res.getString("sod_status"),
-                       res.getString("sod_due_date"),
-                      res.getInt("sod_ord_qty")});
-                }
-               }
-               } else {
-                   // must be top FG
-                   res = st.executeQuery("select * from sod_det " +
-                        " where sod_item = " + "'" + part + "'" + 
-                        " and sod_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                        " and sod_due_date >= "  + "'" + startdate + "'" + 
-                        " and sod_due_date <= "  + "'" + enddate + "'" + 
-                        " order by sod_due_date " +   ";");
-                while (res.next()) {
-                   modelorder.addRow(new Object[]{ 
-                      res.getString("sod_item"), 
-                       res.getString("sod_nbr"),
-                       "SORD",
-                       res.getString("sod_status"),
-                       res.getString("sod_due_date"),
-                      res.getInt("sod_ord_qty")});
-                }
-                   
-                   
-                   
-                   
-               }
-               
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
+            
+            
+            
+            
+            return message;
         }
-
-    }
-    
-        public void getPlans(String part) {
+ 
+        
+       public void done() {
+            try {
+            String[] message = get();
+           
+            BlueSeerUtils.endTask(message);
+            
+            
+            if (this.action.equals("dataInit")) {
+                    done_Initialization();
+            }
+            
+            if (this.action.equals("getBrowseView")) {
+                done_getBrowseView();
+            }
+                 
+            if (this.action.equals("getBrowseViewDet")) {
+                done_getBrowseViewDet();
+            }
+            
+            if (this.action.equals("getBrowseViewDetPlan")) {
+                done_getBrowseViewDetPlan();
+            }
+            
+            if (this.action.equals("getBrowseViewDetPurch")) {
+                done_getBrowseViewDetPurch();
+            }
+            
+            if (this.action.equals("getBrowseViewDetTrans")) {
+                done_getBrowseViewDetTrans();
+            }
+            
+            } catch (Exception e) {
+                MainFrame.bslog(e);
+            } 
+           
+        }
+    }  
       
+       BlueSeerUtils.startTask(new String[]{"","Running..."});
+       Task z = new Task(x, y); 
+       z.execute(); 
        
-         double total = 0.00;
-         String status = "";
-         
-         Enumeration<TableColumn> en = tabledetail.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     tc.setCellRenderer(new MRPBrowse.SomeRenderer());
-                 }
-       
-          ArrayList<String> parents = new ArrayList<String>();
-       
-         
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-              
-                res = st.executeQuery("select * from plan_mstr " +
-                        " where plan_item = " + "'" + part + "'" + 
-                        " and plan_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                        " and plan_date_due >= "  + "'" + startdate + "'" + 
-                        " and plan_date_due <= "  + "'" + enddate + "'" + 
-                        " order by plan_date_due " +   ";");
-                while (res.next()) {
-                    if (res.getInt("plan_status") == 0) {
-                        status = "open";
-                    } 
-                    if (res.getInt("plan_status") < 0) {
-                        status = "void";
-                    }
-                    if (res.getInt("plan_status") > 0) {
-                        status = "close";
-                    }
-                    if (res.getInt("plan_is_sched") == 0) {
-                        status = "unsched";
-                    }
-                   modelorder.addRow(new Object[]{ 
-                      res.getString("plan_item"), 
-                       res.getString("plan_nbr"),
-                       res.getString("plan_type"),
-                       status,
-                       res.getString("plan_date_due"),
-                      res.getInt("plan_qty_sched")});
-                }
-             
-              
-                
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
     }
-        
-        public void getPurch(String part) {
-      
-       
-         double total = 0.00;
-        
-          ArrayList<String> parents = new ArrayList<String>();
-       
-         
-        try {
-
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-                int i = 0;
-              
-                res = st.executeQuery("select * from pod_mstr " +
-                        " where pod_item = " + "'" + part + "'" + 
-                        " and pod_site = " + "'" + ddsite.getSelectedItem().toString() + "'" +
-                        " and pod_due_date >= "  + "'" + startdate + "'" + 
-                        " and pod_due_date <= "  + "'" + enddate + "'" + 
-                        " order by pod_due_date " +   ";");
-                while (res.next()) {
-                   modelorder.addRow(new Object[]{ 
-                      res.getString("pod_item"), 
-                       res.getString("pod_nbr"),
-                       "PORD",
-                       res.getString("pod_status"),
-                       res.getString("pod_due_date"),
-                      (res.getInt("pod_ord_qty") - res.getInt("pod_rcvd_qty"))});
-                }
-             
-               
-                
-                this.repaint();
-
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-
-    }
-         
-        public void getrecenttrans(String parentpart) {
-             
-                 
-         tbqtyoh.setText(String.valueOf(invData.getItemQOHTotal(parentpart, OVData.getDefaultSite())));
-         tbcost.setText(String.valueOf(invData.getItemCost(parentpart, "standard", OVData.getDefaultSite())));
-         tbtype.setText(invData.getItemTypeByPart(parentpart));
-                 
-                 
-       Double opcost = 0.00;
-       Double prevcost = 0.00;
-        try {
-            Connection con = null;
-            if (ds != null) {
-              con = ds.getConnection();
-            } else {
-              con = DriverManager.getConnection(url + db, user, pass);  
-            }
-            Statement st = con.createStatement();
-            ResultSet res = null;
-            try {
-
-                int i = 0;
-                // ReportPanel.TableReport.getColumn("CallID").setCellRenderer(new ButtonRenderer());
-                //          ReportPanel.TableReport.getColumn("CallID").setCellEditor(
-                    //       new ButtonEditor(new JCheckBox()));
-
-               res = st.executeQuery("SELECT tr_type, tr_eff_date, tr_id, tr_qty  " +
-                        " FROM  tran_mstr  " +
-                        " where tr_item = " + "'" + parentpart.toString() + "'" + 
-                        " order by tr_eff_date desc limit 25 ;");
-
-                while (res.next()) {
-                    i++;
-                    modeltrans.addRow(new Object[]{
-                                res.getString("tr_type"),
-                                res.getString("tr_eff_date"),
-                                res.getDouble("tr_qty")
-                            });
-              
-                }
-                
-            } catch (SQLException s) {
-                MainFrame.bslog(s);
-                bsmf.MainFrame.show(getMessageTag(1016, Thread.currentThread().getStackTrace()[1].getMethodName()));
-            } finally {
-                if (res != null) {
-                    res.close();
-                }
-                if (st != null) {
-                    st.close();
-                }
-                con.close();
-            }
-        } catch (Exception e) {
-            MainFrame.bslog(e);
-        }
-             
-             
-         }
-        
+   
     public void setLanguageTags(Object myobj) {
       // lblaccount.setText(labels.getString("LedgerAcctMstrPanel.labels.lblaccount"));
       
@@ -459,12 +275,79 @@ public class MRPBrowse extends javax.swing.JPanel {
                 }
        }
     }
+    
+    public void setPanelComponentState(Object myobj, boolean b) {
+        JPanel panel = null;
+        JTabbedPane tabpane = null;
+        if (myobj instanceof JPanel) {
+            panel = (JPanel) myobj;
+        } else if (myobj instanceof JTabbedPane) {
+           tabpane = (JTabbedPane) myobj; 
+        } else {
+            return;
+        }
+        
+        if (panel != null) {
+        panel.setEnabled(b);
+        Component[] components = panel.getComponents();
+        
+            for (Component component : components) {
+                 // start reset background colors
+                if (component instanceof JTextField) {
+                    if (((JTextField) component).isEditable()) {
+                     component.setBackground(Color.WHITE);
+                    } else {
+                     component.setBackground(bsmf.MainFrame.nonEditableColor);   
+                    }
+                }
+                if (component instanceof JComboBox) {
+                     component.setBackground(bsmf.MainFrame.ddbgcolor);
+                }
+                // end reset background colors
+                if (component instanceof JLabel || component instanceof JTable ) {
+                    continue;
+                }
+                if (component instanceof JPanel) {
+                    setPanelComponentState((JPanel) component, b);
+                }
+                if (component instanceof JTabbedPane) {
+                    setPanelComponentState((JTabbedPane) component, b);
+                }
+                
+                component.setEnabled(b);
+            }
+        }
+            if (tabpane != null) {
+                tabpane.setEnabled(b);
+                Component[] componentspane = tabpane.getComponents();
+                for (Component component : componentspane) {
+                    if (component instanceof JLabel || component instanceof JTable ) {
+                        continue;
+                    }
+                    if (component instanceof JPanel) {
+                        setPanelComponentState((JPanel) component, b);
+                    }
+                    component.setEnabled(b);
+                }
+            }
+    } 
         
     public void initvars(String[] arg) {
-       
-       
-        
-        buttonGroup1.add(rbclassm);
+       executeTask("dataInit", null);
+    }
+  
+    public String[] getInitialization() {
+        initDataSets = admData.getInitMinimum(this.getClass().getName(), bsmf.MainFrame.userid, "");
+        if (initDataSets.isEmpty()) {
+           return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.dataInitError}; 
+        } else {
+           return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getRecordSuccess}; 
+        }
+    }  
+    
+    public void done_Initialization() {
+        setPanelComponentState(this, true);
+         buttonGroup1.add(rbclassm);
         buttonGroup1.add(rbclassp);
         buttonGroup1.add(rbclassa);
         
@@ -488,16 +371,432 @@ public class MRPBrowse extends javax.swing.JPanel {
         tbtopart.setText("");
         ddweek.setSelectedIndex(0);
         
-         PanelDetail.setVisible(false);
-         
-          ddsite.removeAllItems();
-       ArrayList<String>  mylist = OVData.getSiteList(bsmf.MainFrame.userid);
-        for (String code : mylist) {
-            ddsite.addItem(code);
+        PanelDetail.setVisible(false); 
+      
+        
+        
+        java.util.Date now = new java.util.Date();
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dfyear = new SimpleDateFormat("yyyy");
+        DateFormat dfperiod = new SimpleDateFormat("M");
+               
+        ddsite.removeAllItems();
+        for (String[] s : initDataSets) {
+            if (s[0].equals("site")) {
+              defaultSite = s[1]; 
+            }
+            if (s[0].equals("currency")) {
+              defaultCurrency = s[1]; 
+            }
+            if (s[0].equals("sites")) {
+              ddsite.addItem(s[1]); 
+            }
         }
-       
+        
+        ddsite.setSelectedItem(defaultSite);
+        
+        Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
+                 while (en.hasMoreElements()) {
+                     TableColumn tc = en.nextElement();
+                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
+                         continue;
+                     }
+                     tc.setCellRenderer(new MRPBrowse.MainRenderer());
+                 }
+        tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+        
+      //  tablereport.getColumnModel().getColumn(6).setCellRenderer(BlueSeerUtils.NumberRenderer.getCurrencyRenderer(BlueSeerUtils.getCurrencyLocale(defaultCurrency)));
+      
     }
-  
+    
+    public String[] getBrowseView() {
+        
+        String classcode = "";
+        if (rbclassm.isSelected()) {
+            classcode = "M";
+        } else  if (rbclassa.isSelected()) {
+            classcode = "A";
+        } else {
+            classcode = "P";
+        }
+        
+        
+        String cumstartdate = "";
+        String cumenddate = "";
+                
+        DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat hf = new SimpleDateFormat("EEE-MM-dd");
+        Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+        int startday = 2;
+        int week = cal.get(Calendar.WEEK_OF_YEAR);
+
+        if (ddweek.getSelectedItem().equals("Week1")) {
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        cumstartdate = dfdate.format(cal.getTime());
+        }
+
+        if (ddweek.getSelectedItem().equals("Week2")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 1);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+
+        if (ddweek.getSelectedItem().equals("Week3")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 2);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+
+        if (ddweek.getSelectedItem().equals("Week4")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 3);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week5")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 4);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week6")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 5);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week7")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 6);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week8")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 7);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week9")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 8);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week10")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 9);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week11")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 10);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week12")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 11);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+        if (ddweek.getSelectedItem().equals("Week13")) {
+        cal.set(Calendar.WEEK_OF_YEAR,week + 12);
+        cal.set(Calendar.DAY_OF_WEEK, startday);
+        }
+
+
+        // go back one day to get cumenddate
+        cal.add(Calendar.DATE,-1);
+        cumenddate = dfdate.format(cal.getTime());
+
+        // now jump back to true startdate...day 1 of week x
+        cal.add(Calendar.DATE,1);
+        startdate = dfdate.format(cal.getTime());
+        String d1 = dfdate.format(cal.getTime());
+        String d1h = hf.format(cal.getTime());
+
+        // now day 2 of week x  
+        cal.add(Calendar.DATE,1);
+        String d2 = dfdate.format(cal.getTime());
+        String d2h = hf.format(cal.getTime());
+
+        // now day 3 of week x
+        cal.add(Calendar.DATE,1);
+        String d3 = dfdate.format(cal.getTime());
+        String d3h = hf.format(cal.getTime());
+
+        // now day 4 of week x
+        cal.add(Calendar.DATE,1);
+        String d4 = dfdate.format(cal.getTime());
+        String d4h = hf.format(cal.getTime());
+
+        // now day 5 of week x
+        cal.add(Calendar.DATE,1);
+        String d5 = dfdate.format(cal.getTime());
+        String d5h = hf.format(cal.getTime());
+
+        // now day 6 of week x
+        cal.add(Calendar.DATE,1);
+        String d6 = dfdate.format(cal.getTime());
+        String d6h = hf.format(cal.getTime());
+
+        // now day 7 of week x
+        cal.add(Calendar.DATE,1);
+        String d7 = dfdate.format(cal.getTime());
+        String d7h = hf.format(cal.getTime());
+        enddate = dfdate.format(cal.getTime());
+
+
+
+        tablereport.getColumnModel().getColumn(3).setHeaderValue(d1h);
+        tablereport.getColumnModel().getColumn(4).setHeaderValue(d2h);
+        tablereport.getColumnModel().getColumn(5).setHeaderValue(d3h);
+        tablereport.getColumnModel().getColumn(6).setHeaderValue(d4h);
+        tablereport.getColumnModel().getColumn(7).setHeaderValue(d5h);
+        tablereport.getColumnModel().getColumn(8).setHeaderValue(d6h);
+        tablereport.getColumnModel().getColumn(9).setHeaderValue(d7h);
+
+
+        
+        String jsonString = null; 
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) { 
+        ArrayList<String[]> list = new ArrayList<String[]>();
+        list.add(new String[]{"id","getMRPBrowseView"});
+        list.add(new String[]{"param1",ddsite.getSelectedItem().toString()});
+        list.add(new String[]{"param2",d1});
+        list.add(new String[]{"param3",d2});
+        list.add(new String[]{"param4",d3});
+        list.add(new String[]{"param5",d4});
+        list.add(new String[]{"param6",d5});
+        list.add(new String[]{"param7",d6});
+        list.add(new String[]{"param8",d7});
+        list.add(new String[]{"param9",tbfrompart.getText()});
+        list.add(new String[]{"param10",tbtopart.getText()});
+        list.add(new String[]{"param11",classcode});
+        list.add(new String[]{"param12",cumstartdate});
+        list.add(new String[]{"param13",cumenddate});
+        list.add(new String[]{"param14",ddweek.getSelectedItem().toString()});
+        
+        try {
+                jsonString = sendServerPost(list, "", null, "dataServSCH"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getMRPBrowseView")};
+            }
+        } else {
+            jsonString = schData.getMRPBrowseView(new String[]{
+                ddsite.getSelectedItem().toString(),
+                d1,
+                d2,
+                d3,
+                d4,
+                d5,
+                d6,
+                d7,
+                tbfrompart.getText(),
+                tbtopart.getText(),
+                classcode,
+                cumstartdate,
+                cumenddate,
+                ddweek.getSelectedItem().toString()
+            });
+        }
+      
+      if (jsonString == null) {
+          return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getMRPBrowseView return jsonString is null")};
+      }
+        
+      roData = jsonToData(jsonString);
+       
+      return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+    }
+
+    public void done_getBrowseView() {
+        setPanelComponentState(this, true);
+        int i = 0;
+        
+        modeltrans.setNumRows(0);
+        modelorder.setNumRows(0);
+        mymodel.setNumRows(0);
+       
+        
+        double totqty = 0;
+        double totsales = 0;
+        
+        if (roData != null) {
+        for (Object[] rowData : roData) {
+            roData[i][5] = bsParseDouble(roData[i][5].toString());
+            totqty += bsParseDouble(roData[i][5].toString());
+            roData[i][6] = bsParseDouble(roData[i][6].toString());
+            roData[i][7] = bsParseDouble(roData[i][7].toString());
+            totsales += bsParseDouble(roData[i][7].toString());
+            i++;
+            mymodel.addRow(rowData);
+        }
+        
+        }          
+        roData = null;
+    }   
+    
+    public String[] getBrowseViewDet(String item) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getMRPDetBrowseView"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", startdate});
+            list.add(new String[]{"param4", enddate});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getMRPDetBrowseView(new String[]{item,
+                ddsite.getSelectedItem().toString(),
+                startdate,
+                enddate}); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDet() {
+      modeltrans.setNumRows(0);
+      modelorder.setNumRows(0);
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                modelorder.addRow(rowData);
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    public String[] getBrowseViewDetPlan(String item) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getMRPDetPlanBrowseView"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", startdate});
+            list.add(new String[]{"param4", enddate});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getMRPDetPlanBrowseView(new String[]{item,
+                ddsite.getSelectedItem().toString(),
+                startdate,
+                enddate}); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDetPlan() {
+      modeltrans.setNumRows(0);
+      modelorder.setNumRows(0);
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                modelorder.addRow(rowData);
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    public String[] getBrowseViewDetPurch(String item) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getMRPDetPurchBrowseView"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", startdate});
+            list.add(new String[]{"param4", enddate});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getMRPDetPurchBrowseView(new String[]{item,
+                ddsite.getSelectedItem().toString(),
+                startdate,
+                enddate}); 
+        }        
+        roData = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDetPurch() {
+      modeltrans.setNumRows(0);
+      modelorder.setNumRows(0);
+       if (roData != null) {
+        if (roData.length > 0) {
+            for (Object[] rowData : roData) {
+                modelorder.addRow(rowData);
+            } 
+        }
+       }
+       roData = null;
+    }
+    
+    public String[] getBrowseViewDetTrans(String item) {
+      
+        String jsonString = null;
+        if (bsmf.MainFrame.remoteDB && ! bsmf.MainFrame.isSSHConnected) {
+            ArrayList<String[]> list = new ArrayList<>();
+            list.add(new String[]{"id", "getMRPDetTransBrowseView"});
+            list.add(new String[]{"param1", item});
+            list.add(new String[]{"param2", ddsite.getSelectedItem().toString()});
+            list.add(new String[]{"param3", startdate});
+            list.add(new String[]{"param4", enddate});
+            try {
+                jsonString = sendServerPost(list, "", null, "dataServPRD"); 
+            } catch (IOException ex) {
+                bslog(ex);
+                return new String[]{BlueSeerUtils.ErrorBit, BlueSeerUtils.getMessageTag(1010, "getDetail")};
+            }
+        } else {
+            jsonString = getMRPDetTransBrowseView(new String[]{item,
+                ddsite.getSelectedItem().toString(),
+                startdate,
+                enddate}); 
+        }        
+        roDataTrans = jsonToData(jsonString);
+        
+        return new String[]{BlueSeerUtils.SuccessBit, BlueSeerUtils.getMessageTag(1125)};
+      
+    }
+   
+    public void done_getBrowseViewDetTrans() {
+      modeltrans.setNumRows(0);
+     // modelorder.setNumRows(0);
+       if (roDataTrans != null) {
+           
+        if (roDataTrans.length > 0) {
+            
+        tbqtyoh.setText(roDataTrans[0][3].toString());
+        tbcost.setText(roDataTrans[0][4].toString());
+        tbtype.setText(roDataTrans[0][5].toString());
+        
+        Object[][] newdata = dropColumn(roDataTrans, 5);
+                   newdata = dropColumn(roDataTrans, 4);
+                   newdata = dropColumn(roDataTrans, 3);  
+            
+            
+            for (Object[] rowData : newdata) {
+                modeltrans.addRow(rowData);
+            } 
+        
+        }
+       }
+       roDataTrans = null;
+    }
+    
     
      class ButtonRenderer extends JButton implements TableCellRenderer {
 
@@ -966,52 +1265,16 @@ public class MRPBrowse extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btsearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btsearchActionPerformed
-    
-        
-       
-       // reinit tables
-       modeltrans.setRowCount(0);
-        modelorder.setRowCount(0);
-        mymodel.setRowCount(0);
-       
-       
-       String frompart = "";
-       String topart = "";
-       String thispart = "";
-       
-             
-       if (tbfrompart.getText().isEmpty()) {
-           frompart = bsmf.MainFrame.lowchar;
-       } else {
-          frompart = tbfrompart.getText(); 
-       }
-       
-       if (tbtopart.getText().isEmpty()) {
-           topart = bsmf.MainFrame.hichar;
-       } else {
-          topart = tbtopart.getText(); 
-       }
-       
-       String classcode = "";
-                if (rbclassm.isSelected()) {
-                    classcode = "M";
-                } else  if (rbclassa.isSelected()) {
-                    classcode = "A";
-                } else {
-                    classcode = "P";
-                }
-       
-       
-        tbtype.setText("");
-        tbcost.setText("");
-        tbqtyoh.setText("");
-        
         mymodel.setNumRows(0);
+        setPanelComponentState(this, false);
+        executeTask("getBrowseView", null);
+        
+       
+       
         
         
         
-        
-        
+        /*
         ArrayList<String> items = invData.getItemRangeByClass(ddsite.getSelectedItem().toString(), frompart, topart, classcode);
         
         
@@ -1033,18 +1296,9 @@ public class MRPBrowse extends javax.swing.JPanel {
                 int z = 0;
                 
                 
-                Enumeration<TableColumn> en = tablereport.getColumnModel().getColumns();
-                 while (en.hasMoreElements()) {
-                     TableColumn tc = en.nextElement();
-                     if (mymodel.getColumnClass(tc.getModelIndex()).getSimpleName().equals("ImageIcon")) {
-                         continue;
-                     }
-                     tc.setCellRenderer(new MRPBrowse.MainRenderer());
-                 }
-              tablereport.getColumnModel().getColumn(0).setMaxWidth(100);
+                
               
-                int startday = 2;
-                int week = 0;
+                
                 double qoh = 0;
                 double qoh1 = 0;
                 double qoh2 = 0;
@@ -1060,120 +1314,6 @@ public class MRPBrowse extends javax.swing.JPanel {
                 double cumdemand = 0;
                 
                 
-                
-                DateFormat dfdate = new SimpleDateFormat("yyyy-MM-dd");
-                DateFormat hf = new SimpleDateFormat("EEE-MM-dd");
-                Date now = new Date();
-                Calendar cal = Calendar.getInstance();
-                week = cal.get(Calendar.WEEK_OF_YEAR);
-                
-                if (ddweek.getSelectedItem().equals("Week1")) {
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                cumstartdate = dfdate.format(cal.getTime());
-                }
-                
-                if (ddweek.getSelectedItem().equals("Week2")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 1);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                
-                if (ddweek.getSelectedItem().equals("Week3")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 2);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                
-                if (ddweek.getSelectedItem().equals("Week4")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 3);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week5")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 4);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week6")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 5);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week7")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 6);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week8")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 7);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week9")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 8);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week10")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 9);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week11")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 10);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week12")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 11);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                if (ddweek.getSelectedItem().equals("Week13")) {
-                cal.set(Calendar.WEEK_OF_YEAR,week + 12);
-                cal.set(Calendar.DAY_OF_WEEK, startday);
-                }
-                
-                
-                // go back one day to get cumenddate
-                cal.add(Calendar.DATE,-1);
-                cumenddate = dfdate.format(cal.getTime());
-                
-                // now jump back to true startdate...day 1 of week x
-                cal.add(Calendar.DATE,1);
-                startdate = dfdate.format(cal.getTime());
-                String d1 = dfdate.format(cal.getTime());
-                String d1h = hf.format(cal.getTime());
-                
-                // now day 2 of week x  
-                cal.add(Calendar.DATE,1);
-                String d2 = dfdate.format(cal.getTime());
-                String d2h = hf.format(cal.getTime());
-                
-                // now day 3 of week x
-                cal.add(Calendar.DATE,1);
-                String d3 = dfdate.format(cal.getTime());
-                String d3h = hf.format(cal.getTime());
-                
-                // now day 4 of week x
-                cal.add(Calendar.DATE,1);
-                String d4 = dfdate.format(cal.getTime());
-                String d4h = hf.format(cal.getTime());
-                
-                // now day 5 of week x
-                cal.add(Calendar.DATE,1);
-                String d5 = dfdate.format(cal.getTime());
-                String d5h = hf.format(cal.getTime());
-                
-                // now day 6 of week x
-                cal.add(Calendar.DATE,1);
-                String d6 = dfdate.format(cal.getTime());
-                String d6h = hf.format(cal.getTime());
-                
-                // now day 7 of week x
-                cal.add(Calendar.DATE,1);
-                String d7 = dfdate.format(cal.getTime());
-                String d7h = hf.format(cal.getTime());
-                enddate = dfdate.format(cal.getTime());
-                
-                
-                
-                tablereport.getColumnModel().getColumn(3).setHeaderValue(d1h);
-                tablereport.getColumnModel().getColumn(4).setHeaderValue(d2h);
-                tablereport.getColumnModel().getColumn(5).setHeaderValue(d3h);
-                tablereport.getColumnModel().getColumn(6).setHeaderValue(d4h);
-                tablereport.getColumnModel().getColumn(7).setHeaderValue(d5h);
-                tablereport.getColumnModel().getColumn(8).setHeaderValue(d6h);
-                tablereport.getColumnModel().getColumn(9).setHeaderValue(d7h);
                 
                 tablereport.getTableHeader().repaint();
                 
@@ -1202,7 +1342,7 @@ public class MRPBrowse extends javax.swing.JPanel {
                cumdemand = 0;
                cumreplenish = 0;
                
-               // lets get cumaltive (if now week 1)
+               // lets get cumaltive (if not week 1)
                if (! ddweek.getSelectedItem().equals("Week1")) {
                     res = st.executeQuery("select mrp_item, ifnull(sum(mrp_qty),0) as cumqty  " +
                              " from mrp_mstr where mrp_date >= " + "'" + cumstartdate + "'" + " AND" +
@@ -1216,7 +1356,7 @@ public class MRPBrowse extends javax.swing.JPanel {
                     res.close();
                } 
                
-               // lets get cumalative PLAN records (if now week 1)
+               // lets get cumalative PLAN records (if not week 1)
                if (! ddweek.getSelectedItem().equals("Week1")) {
                     res = st.executeQuery("select plan_item, ifnull(sum(plan_qty_sched),0) as cumqty  " +
                              " from plan_mstr where plan_date_due >= " + "'" + cumstartdate + "'" + " AND" +
@@ -1231,7 +1371,7 @@ public class MRPBrowse extends javax.swing.JPanel {
                     res.close();
                }
                
-                // lets get cumalative PURCHASE/REPLENISHMENT records (if now week 1)
+                // lets get cumalative PURCHASE/REPLENISHMENT records (if not week 1)
                if (! ddweek.getSelectedItem().equals("Week1")) {
                     res = st.executeQuery("select pod_item, ifnull(sum(pod_ord_qty - pod_rcvd_qty),0) as cumqty  " +
                              " from pod_mstr " +
@@ -1288,7 +1428,7 @@ public class MRPBrowse extends javax.swing.JPanel {
                 
                     // Now lets get the planning info if class 'M' otherwise purchase info if class 'P' or 'A'
                                    
-                    if (classcode.toUpperCase().compareTo("M") == 0) {
+                if (classcode.toUpperCase().compareTo("M") == 0) {
                         
                         res2 = st2.executeQuery("select plan_item, (case when in_qoh is null then '0' else in_qoh end) as in_qoh, " +
                " sum(A) as A, sum(B) as B, sum(C) as C, sum(D) as D, sum(E) as E, sum(F) as F, sum(G) as G from " +
@@ -1436,7 +1576,7 @@ public class MRPBrowse extends javax.swing.JPanel {
                    
                  }       
                    
-                 if (classcode.toUpperCase().compareTo("P") == 0) {
+                if (classcode.toUpperCase().compareTo("P") == 0) {
                    // if class P
                  
                res2 = st2.executeQuery("select it_item, (case when in_qoh is null then '0' else in_qoh end) as in_qoh, " +
@@ -1552,6 +1692,8 @@ public class MRPBrowse extends javax.swing.JPanel {
         } catch (SQLException e) {
             MainFrame.bslog(e);
         }
+        
+        */
     }//GEN-LAST:event_btsearchActionPerformed
 
     private void btdetailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btdetailActionPerformed
@@ -1561,29 +1703,33 @@ public class MRPBrowse extends javax.swing.JPanel {
     private void tablereportMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tablereportMouseClicked
          int row = tablereport.rowAtPoint(evt.getPoint());
         int col = tablereport.columnAtPoint(evt.getPoint());
-        if ( col == 0 && ! tablereport.getValueAt(row, col).toString().isEmpty()) {
+            if ( col == 0 && ! tablereport.getValueAt(row, col).toString().isEmpty()) {
             
-            modelorder.setNumRows(0);
-            modeltrans.setNumRows(0);
+          //  modelorder.setNumRows(0);
+          //  modeltrans.setNumRows(0);
             TableColumn tc = null;
-            getrecenttrans(tablereport.getValueAt(row, 1).toString());
+            //getrecenttrans(tablereport.getValueAt(row, 1).toString());
+            executeTask("getBrowseViewDetTrans", new String[]{tablereport.getValueAt(row, 1).toString()});
             
             if (tablereport.getValueAt(row, 2).toString().equals("PLAN")) {
             tc = tabledetail.getTableHeader().getColumnModel().getColumn(1);
             tc.setHeaderValue("PlanOrder");
-            getPlans(tablereport.getValueAt(row, 1).toString());
+           // getPlans(tablereport.getValueAt(row, 1).toString());
+            executeTask("getBrowseViewDetPlan", new String[]{tablereport.getValueAt(row, 1).toString()});
             }
             
             if (tablereport.getValueAt(row, 2).toString().equals("DEMAND")) {
             tc = tabledetail.getTableHeader().getColumnModel().getColumn(1);
             tc.setHeaderValue("SalesOrder");
-            getdetail(tablereport.getValueAt(row, 1).toString());
+           // getdetail(tablereport.getValueAt(row, 1).toString());
+            executeTask("getBrowseViewDet", new String[]{tablereport.getValueAt(row, 1).toString()});
             }
             
             if (tablereport.getValueAt(row, 2).toString().equals("PURCH")) {
             tc = tabledetail.getTableHeader().getColumnModel().getColumn(1);
             tc.setHeaderValue("PurchOrder");
-            getPurch(tablereport.getValueAt(row, 1).toString());
+           // getPurch(tablereport.getValueAt(row, 1).toString());
+            executeTask("getBrowseViewDetPurch", new String[]{tablereport.getValueAt(row, 1).toString()});
             }
             
             btdetail.setEnabled(true);

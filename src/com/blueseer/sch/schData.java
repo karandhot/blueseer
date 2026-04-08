@@ -34,8 +34,10 @@ import static bsmf.MainFrame.pass;
 import static bsmf.MainFrame.url;
 import static bsmf.MainFrame.user;
 import static com.blueseer.hrm.hrmData.getEmpFormalNameByID;
+import com.blueseer.inv.invData;
 import com.blueseer.utl.BlueSeerUtils;
 import static com.blueseer.utl.BlueSeerUtils.bsNumber;
+import static com.blueseer.utl.BlueSeerUtils.bsParseDouble;
 import static com.blueseer.utl.BlueSeerUtils.currformat;
 import static com.blueseer.utl.BlueSeerUtils.currformatDouble;
 import static com.blueseer.utl.BlueSeerUtils.getDateDB;
@@ -47,6 +49,7 @@ import static com.blueseer.utl.BlueSeerUtils.jsonToDouble;
 import static com.blueseer.utl.BlueSeerUtils.jsonToStringArray;
 import static com.blueseer.utl.BlueSeerUtils.sendServerPost;
 import static com.blueseer.utl.BlueSeerUtils.xNull;
+import com.blueseer.utl.OVData;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -61,7 +64,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.json.JSONArray;
 
 /**
@@ -605,6 +612,685 @@ public class schData {
     }
     
    
+    public static String getMRPBrowseView(String[] keys) {
+        
+       // keys =  site, fromdate, date2, date3, date4, date5, date6, enddate, itemfrom, itemto, classcode, cumstartdate, cumenddate, ddweek
+       
+       keys[8] = (keys[8].isBlank()) ? bsmf.MainFrame.lowchar : keys[8];
+       keys[9] = (keys[9].isBlank()) ? bsmf.MainFrame.hichar : keys[9];
+       
+       JSONArray jsonarray = new JSONArray();
+        
+        ArrayList<String> items = invData.getItemRangeByClass(keys[0], keys[8], keys[9], keys[10]); 
+        
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            Statement st2 = con.createStatement();
+            ResultSet res2 = null;
+            try {
+                
+            String qa = "";
+           String qb = "";
+           String qc = "";
+           String qd = "";
+           String qe = "";
+           String qf = "";
+           String qg = "";
+            double qoh = 0;
+            double qoh1 = 0;
+            double qoh2 = 0;
+            double qoh3 = 0;
+            double qoh4 = 0;
+            double qoh5 = 0;
+            double qoh6 = 0;
+            double qoh7 = 0;
+            double gain = 0;
+            double cumqoh = 0;
+            double cumplan = 0;
+            double cumreplenish = 0;
+            double cumdemand = 0;
+                
+              for (String item : items) { 
+                  
+              qa = "0";
+                qb = "0";
+                qc = "0";
+                qd = "0";
+                qe = "0";
+                qf = "0";
+                qg = "0";
+               qoh = invData.getItemQOHTotal(item, keys[0]);
+               cumqoh = qoh;
+               cumplan = 0;
+               cumdemand = 0;
+               cumreplenish = 0;    
+                
+               // lets get cumaltive (if not week 1)
+               if (! keys[13].equals("Week1")) {
+                    res = st.executeQuery("select mrp_item, ifnull(sum(mrp_qty),0) as cumqty  " +
+                             " from mrp_mstr where mrp_date >= " + "'" + keys[11] + "'" + " AND" +
+                             " mrp_date <= " + "'" + keys[12] + "'" + " AND" +
+                             " mrp_site = " + "'" + keys[0] + "'" + " AND" +
+                             " mrp_item = " + "'" + item + "'" + "  " +
+                             " group by mrp_item ; ");
+                    while (res.next()) {
+                        cumdemand = res.getDouble("cumqty");
+                    }
+                    res.close();
+               } 
+               
+               // lets get cumalative PLAN records (if not week 1)
+               if (! keys[13].equals("Week1")) {
+                    res = st.executeQuery("select plan_item, ifnull(sum(plan_qty_sched),0) as cumqty  " +
+                             " from plan_mstr where plan_date_due >= " + "'" + keys[11] + "'" + " AND" +
+                             " plan_date_due <= " + "'" + keys[12] + "'" + " AND" +
+                             " plan_site = " + "'" + keys[0] + "'" + " AND" +
+                             " plan_status = '0' AND" +
+                             " plan_item = " + "'" + item + "'" +
+                             " group by plan_item ; ");
+                    while (res.next()) {
+                        cumplan = res.getDouble("cumqty");
+                    }
+                    res.close();
+               }
+               
+                // lets get cumalative PURCHASE/REPLENISHMENT records (if not week 1)
+               if (! keys[13].equals("Week1")) {
+                    res = st.executeQuery("select pod_item, ifnull(sum(pod_ord_qty - pod_rcvd_qty),0) as cumqty  " +
+                             " from pod_mstr " +
+                             " where pod_due_date >= " + "'" + keys[11] + "'" + " AND" +
+                             " pod_due_date <= " + "'" + keys[12] + "'" + " AND" +
+                             " pod_site = " + "'" + keys[0] + "'" + " AND " +
+                             " pod_item = " + "'" + item + "'" +
+                             " group by pod_item ; ");
+                          while (res.next()) {
+                            cumreplenish = res.getDouble("cumqty");
+                          }
+                          res.close();
+               }
+               
+               
+               
+                
+                res = st.executeQuery("select mrp_item,  " +
+               " sum(A) as A, sum(B) as B, sum(C) as C, sum(D) as D, sum(E) as E, sum(F) as F, sum(G) as G from " +
+               " ( select mrp_item, (case when mrp_date = " + "'" + keys[1] + "'" + " then mrp_qty else '0' end) as A, " +
+               " (case when mrp_date = " + "'" + keys[2] + "'" + " then mrp_qty else '0' end) as B, " + 
+               " (case when mrp_date = " + "'" + keys[3] + "'" + " then mrp_qty else '0' end) as C, " +
+               " (case when mrp_date = " + "'" + keys[4] + "'" + " then mrp_qty else '0' end) as D, " +
+               " (case when mrp_date = " + "'" + keys[5] + "'" + " then mrp_qty else '0' end) as E, " +
+               " (case when mrp_date = " + "'" + keys[6] + "'" + " then mrp_qty else '0' end) as F, " +
+               " (case when mrp_date = " + "'" + keys[7] + "'" + " then mrp_qty else '0' end) as G " +
+               " from mrp_mstr where mrp_date >= " + "'" + keys[1] + "'" + " AND" +
+               " mrp_date <= " + "'" + keys[7] + "'" + " AND" +
+               " mrp_site = " + "'" + keys[0] + "'" + " AND" +
+               " mrp_item = " + "'" + item + "'" + " ) s " +
+                       " group by mrp_item ; ");
+                
+                int i = 0;
+                    while (res.next()) {
+                    i++;
+                    qa = res.getString("A");
+                    qb = res.getString("B");
+                    qc = res.getString("C");
+                    qd = res.getString("D");
+                    qe = res.getString("E");
+                    qf = res.getString("F");
+                    qg = res.getString("G");
+                        
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(item);
+                        rowArray.put("DEMAND");
+                        rowArray.put(res.getString("A"));
+                        rowArray.put(res.getString("B"));
+                        rowArray.put(res.getString("C"));
+                        rowArray.put(res.getString("D"));
+                        rowArray.put(res.getString("E"));
+                        rowArray.put(res.getString("F"));
+                        rowArray.put(res.getString("G"));
+                        jsonarray.put(rowArray);
+                }
+                
+                int z = 0;
+                if (keys[10].toUpperCase().compareTo("M") == 0) {
+                        
+                        res2 = st2.executeQuery("select plan_item, (case when in_qoh is null then '0' else in_qoh end) as in_qoh, " +
+               " sum(A) as A, sum(B) as B, sum(C) as C, sum(D) as D, sum(E) as E, sum(F) as F, sum(G) as G from " +
+               " ( select plan_item, (case when plan_date_due = " + "'" + keys[1] + "'" + " then plan_qty_sched else '0' end) as A, " +
+               " (case when plan_date_due = " + "'" + keys[2] + "'" + " then plan_qty_sched else '0' end) as B, " + 
+               " (case when plan_date_due = " + "'" + keys[3] + "'" + " then plan_qty_sched else '0' end) as C, " +
+               " (case when plan_date_due = " + "'" + keys[4] + "'" + " then plan_qty_sched else '0' end) as D, " +
+               " (case when plan_date_due = " + "'" + keys[5] + "'" + " then plan_qty_sched else '0' end) as E, " +
+               " (case when plan_date_due = " + "'" + keys[6] + "'" + " then plan_qty_sched else '0' end) as F, " +
+               " (case when plan_date_due = " + "'" + keys[7] + "'" + " then plan_qty_sched else '0' end) as G " +
+               " from plan_mstr where plan_date_due >= " + "'" + keys[1] + "'" + " AND" +
+               " plan_date_due <= " + "'" + keys[7] + "'" + " AND" +
+               " plan_site = " + "'" + keys[0] + "'" + " AND" +
+               " plan_status = '0' AND" +
+               " plan_item = " + "'" + item + "'" + " ) s " +
+               " inner join item_mstr on it_item = plan_item " +
+               " left outer join in_mstr on in_item = it_item and in_loc = it_loc " +
+                       " group by plan_item, in_qoh ; ");
+                   z = 0; 
+                   while (res2.next()) {
+                       z++;
+                        
+                  
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res2.getString("plan_item"));
+                        rowArray.put("PLAN");
+                        rowArray.put(res2.getString("A"));
+                        rowArray.put(res2.getString("B"));
+                        rowArray.put(res2.getString("C"));
+                        rowArray.put(res2.getString("D"));
+                        rowArray.put(res2.getString("E"));
+                        rowArray.put(res2.getString("F"));
+                        rowArray.put(res2.getString("G"));
+                        jsonarray.put(rowArray);
+                    
+                    qoh1 = cumqoh - cumdemand + cumplan + (res2.getDouble("A")) - bsParseDouble(qa);
+                    qoh2 = qoh1 + res2.getDouble("B") - bsParseDouble(qb);
+                    qoh3 = qoh2 + res2.getDouble("C") - bsParseDouble(qc);
+                    qoh4 = qoh3 + res2.getDouble("D") - bsParseDouble(qd);
+                    qoh5 = qoh4 + res2.getDouble("E") - bsParseDouble(qe);
+                    qoh6 = qoh5 + res2.getDouble("F") - bsParseDouble(qf);
+                    qoh7 = qoh6 + res2.getDouble("G") - bsParseDouble(qg);
+                    
+                   } 
+                   // if no plan records then create dummy zero 'PLAN' record
+                   if (z == 0) {
+                      JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(item);
+                        rowArray.put("PLAN");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        jsonarray.put(rowArray);
+                    
+                    qoh1 = cumqoh - cumdemand + cumplan - bsParseDouble(qa);
+                    qoh2 = qoh1 - bsParseDouble(qb);
+                    qoh3 = qoh2 - bsParseDouble(qc);
+                    qoh4 = qoh3 - bsParseDouble(qd);
+                    qoh5 = qoh4 - bsParseDouble(qe);
+                    qoh6 = qoh5 - bsParseDouble(qf);
+                    qoh7 = qoh6 - bsParseDouble(qg); 
+                   }
+                 
+                 }   
+                
+                if (keys[10].toUpperCase().compareTo("A") == 0) {
+                     // if class A
+                 
+               res2 = st2.executeQuery("select it_item, (case when in_qoh is null then '0' else in_qoh end) as in_qoh, " +
+               " (case when sum(A) is not null then sum(A) else '0' end) as A, " +
+               " (case when sum(B) is not null then sum(B) else '0' end) as B, " +
+               " (case when sum(C) is not null then sum(C) else '0' end) as C, " +
+               " (case when sum(D) is not null then sum(D) else '0' end) as D, " +
+               " (case when sum(E) is not null then sum(E) else '0' end) as E, " +
+               " (case when sum(F) is not null then sum(F) else '0' end) as F, " +
+               " (case when sum(G) is not null then sum(G) else '0' end) as G " +
+               " from item_mstr left outer join ( " +
+               " select pod_item, " +
+               " (case when pod_due_date = " + "'" + keys[1] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as A, " +
+               " (case when pod_due_date = " + "'" + keys[2] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as B, " + 
+               " (case when pod_due_date = " + "'" + keys[3] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as C, " +
+               " (case when pod_due_date = " + "'" + keys[4] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as D, " +
+               " (case when pod_due_date = " + "'" + keys[5] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as E, " +
+               " (case when pod_due_date = " + "'" + keys[6] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as F, " +
+               " (case when pod_due_date = " + "'" + keys[7] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as G " +
+               " from pod_mstr " +
+               " where pod_due_date >= " + "'" + keys[1] + "'" + " AND" +
+               " pod_due_date <= " + "'" + keys[7] + "'" + " AND" +
+               " pod_site = " + "'" + keys[0] + "'" +
+               " ) s on s.pod_item = it_item" +
+               " left outer join in_mstr on in_item = it_item and in_loc = it_loc " +
+               " where it_item = " + "'" + item + "'" + " group by pod_item, in_qoh ; ");
+                    
+                   z = 0;         
+                   while (res2.next()) {
+                       z++;
+                   
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(item);
+                        rowArray.put("PURCH");
+                        rowArray.put(res2.getString("A"));
+                        rowArray.put(res2.getString("B"));
+                        rowArray.put(res2.getString("C"));
+                        rowArray.put(res2.getString("D"));
+                        rowArray.put(res2.getString("E"));
+                        rowArray.put(res2.getString("F"));
+                        rowArray.put(res2.getString("G"));
+                        jsonarray.put(rowArray);
+                  //  MainFrame.show("X" + "/" + item + "/" + cumqoh + "/" + cumreplenish + "/" + qa);
+                    qoh1 = cumqoh - cumdemand + cumreplenish + Double.valueOf(res2.getString("A")) - Double.valueOf(qa);
+                    qoh2 = qoh1 + Double.valueOf(res2.getString("B")) - Double.valueOf(qb);
+                    qoh3 = qoh2 + Double.valueOf(res2.getString("C")) - Double.valueOf(qc);
+                    qoh4 = qoh3 + Double.valueOf(res2.getString("D")) - Double.valueOf(qd);
+                    qoh5 = qoh4 + Double.valueOf(res2.getString("E")) - Double.valueOf(qe);
+                    qoh6 = qoh5 + Double.valueOf(res2.getString("F")) - Double.valueOf(qf);
+                    qoh7 = qoh6 + Double.valueOf(res2.getString("G")) - Double.valueOf(qg);
+                    
+                   } 
+                   
+                     // if no plan records then create dummy zero 'PURCH' record
+                   if (z == 0) {                      
+                      JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(res.getString("mrp_item"));
+                        rowArray.put("PURCH");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        jsonarray.put(rowArray);
+                      
+                    
+                    qoh1 = cumqoh - cumdemand + cumreplenish - Double.valueOf(qa);
+                    qoh2 = qoh1 - Double.valueOf(qb);
+                    qoh3 = qoh2 - Double.valueOf(qc);
+                    qoh4 = qoh3 - Double.valueOf(qd);
+                    qoh5 = qoh4 - Double.valueOf(qe);
+                    qoh6 = qoh5 - Double.valueOf(qf);
+                    qoh7 = qoh6 - Double.valueOf(qg); 
+                   }
+                   
+                 }       
+                   
+                if (keys[10].toUpperCase().compareTo("P") == 0) {
+                   // if class P
+                 
+               res2 = st2.executeQuery("select it_item, (case when in_qoh is null then '0' else in_qoh end) as in_qoh, " +
+               " (case when sum(A) is not null then sum(A) else '0' end) as A, " +
+               " (case when sum(B) is not null then sum(B) else '0' end) as B, " +
+               " (case when sum(C) is not null then sum(C) else '0' end) as C, " +
+               " (case when sum(D) is not null then sum(D) else '0' end) as D, " +
+               " (case when sum(E) is not null then sum(E) else '0' end) as E, " +
+               " (case when sum(F) is not null then sum(F) else '0' end) as F, " +
+               " (case when sum(G) is not null then sum(G) else '0' end) as G " +
+               " from item_mstr left outer join ( " +
+               " select pod_item, " +
+               " (case when pod_due_date = " + "'" + keys[1] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as A, " +
+               " (case when pod_due_date = " + "'" + keys[2] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as B, " + 
+               " (case when pod_due_date = " + "'" + keys[3] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as C, " +
+               " (case when pod_due_date = " + "'" + keys[4] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as D, " +
+               " (case when pod_due_date = " + "'" + keys[5] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as E, " +
+               " (case when pod_due_date = " + "'" + keys[6] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as F, " +
+               " (case when pod_due_date = " + "'" + keys[7] + "'" + " then (pod_ord_qty - pod_rcvd_qty) else '0' end) as G " +
+               " from pod_mstr " +
+               " where pod_due_date >= " + "'" + keys[1] + "'" + " AND" +
+               " pod_due_date <= " + "'" + keys[7] + "'" + " AND" +
+               " pod_site = " + "'" + keys[0] + "'" +
+               " ) s on s.pod_item = it_item" +
+               " left outer join in_mstr on in_item = it_item and in_loc = it_loc " +
+               " where it_item = " + "'" + item + "'" + " group by pod_item, in_qoh ; ");
+                    
+                   z = 0;         
+                   while (res2.next()) {
+                       z++;
+                  
+                    JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(item);
+                        rowArray.put("PURCH");
+                        rowArray.put(res2.getString("A"));
+                        rowArray.put(res2.getString("B"));
+                        rowArray.put(res2.getString("C"));
+                        rowArray.put(res2.getString("D"));
+                        rowArray.put(res2.getString("E"));
+                        rowArray.put(res2.getString("F"));
+                        rowArray.put(res2.getString("G"));
+                        jsonarray.put(rowArray);
+                    
+                    qoh1 = cumqoh - cumdemand + cumreplenish + Double.valueOf(res2.getString("A")) - Double.valueOf(qa);
+                    qoh2 = qoh1 + Double.valueOf(res2.getString("B")) - Double.valueOf(qb);
+                    qoh3 = qoh2 + Double.valueOf(res2.getString("C")) - Double.valueOf(qc);
+                    qoh4 = qoh3 + Double.valueOf(res2.getString("D")) - Double.valueOf(qd);
+                    qoh5 = qoh4 + Double.valueOf(res2.getString("E")) - Double.valueOf(qe);
+                    qoh6 = qoh5 + Double.valueOf(res2.getString("F")) - Double.valueOf(qf);
+                    qoh7 = qoh6 + Double.valueOf(res2.getString("G")) - Double.valueOf(qg);
+                    
+                   } 
+                   
+                     // if no plan records then create dummy zero 'PURCH' record
+                   if (z == 0) {                     
+                      JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("select");
+                        rowArray.put(item);
+                        rowArray.put("PURCH");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        rowArray.put("0");
+                        jsonarray.put(rowArray);
+                    
+                    qoh1 = cumqoh - cumdemand + cumreplenish - Double.valueOf(qa);
+                    qoh2 = qoh1 - Double.valueOf(qb);
+                    qoh3 = qoh2 - Double.valueOf(qc);
+                    qoh4 = qoh3 - Double.valueOf(qd);
+                    qoh5 = qoh4 - Double.valueOf(qe);
+                    qoh6 = qoh5 - Double.valueOf(qf);
+                    qoh7 = qoh6 - Double.valueOf(qg); 
+                   }
+                   
+                   
+                    
+                 }  // end if class P
+                 
+                
+                // add QOH
+                JSONArray rowArray = new JSONArray(); 
+                        rowArray.put("");
+                        rowArray.put(item);
+                        rowArray.put("QOH");
+                        rowArray.put(qoh1);
+                        rowArray.put(qoh2);
+                        rowArray.put(qoh3);
+                        rowArray.put(qoh4);
+                        rowArray.put(qoh5);
+                        rowArray.put(qoh6);
+                        rowArray.put(qoh7);
+                        jsonarray.put(rowArray);
+                    
+                    
+              } // for item of items 
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+   
+    public static String getMRPDetBrowseView(String[] keys) { // item, site, startdate, enddate
+        JSONArray jsonarray = new JSONArray();
+        
+        Set<String> parents = new LinkedHashSet<String>();
+        parents = OVData.getpsmstrparents2(keys[0]);
+        List<String> sortedList = new ArrayList<>(parents);
+        Collections.sort(sortedList);
+        
+        
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                
+                
+                if (! sortedList.isEmpty()) { 
+               for (String line : sortedList) {
+                res = st.executeQuery("select * from sod_det " +
+                        " where sod_item = " + "'" + line + "'" + 
+                        " and sod_site = " + "'" + keys[1] + "'" +
+                        " and sod_due_date >= "  + "'" + keys[2] + "'" + 
+                        " and sod_due_date <= "  + "'" + keys[3] + "'" + 
+                        " order by sod_due_date " +   ";");
+                while (res.next()) {
+                   JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("sod_item"));
+                        rowArray.put(res.getString("sod_nbr"));
+                        rowArray.put("SORD");
+                        rowArray.put(res.getString("sod_status"));
+                        rowArray.put(res.getString("sod_due_date"));
+                        rowArray.put(res.getString("sod_ord_qty"));
+                        jsonarray.put(rowArray);
+                }
+               }
+               } else {
+                   // must be top FG
+                   res = st.executeQuery("select * from sod_det " +
+                        " where sod_item = " + "'" + keys[0] + "'" + 
+                        " and sod_site = " + "'" + keys[1] + "'" +
+                        " and sod_due_date >= "  + "'" + keys[2] + "'" + 
+                        " and sod_due_date <= "  + "'" + keys[3] + "'" + 
+                        " order by sod_due_date " +   ";");
+                while (res.next()) {
+                   JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("sod_item"));
+                        rowArray.put(res.getString("sod_nbr"));
+                        rowArray.put("SORD");
+                        rowArray.put(res.getString("sod_status"));
+                        rowArray.put(res.getString("sod_due_date"));
+                        rowArray.put(res.getString("sod_ord_qty"));
+                        jsonarray.put(rowArray);
+                }
+               }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getMRPDetPlanBrowseView(String[] keys) { // item, site, startdate, enddate
+        JSONArray jsonarray = new JSONArray();
+        
+        
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+                
+                
+             
+               res = st.executeQuery("select * from plan_mstr " +
+                        " where plan_item = " + "'" + keys[0] + "'" + 
+                        " and plan_site = " + "'" + keys[1] + "'" +
+                        " and plan_date_due >= "  + "'" + keys[2] + "'" + 
+                        " and plan_date_due <= "  + "'" + keys[3] + "'" + 
+                        " order by plan_date_due " +   ";");
+               
+              
+                String status = "";
+                while (res.next()) {
+                    if (res.getInt("plan_status") == 0) {
+                        status = "open";
+                    } 
+                    if (res.getInt("plan_status") < 0) {
+                        status = "void";
+                    }
+                    if (res.getInt("plan_status") > 0) {
+                        status = "close";
+                    }
+                    if (res.getInt("plan_is_sched") == 0) {
+                        status = "unsched";
+                    }
+                   JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("plan_item"));
+                        rowArray.put(res.getString("plan_nbr"));
+                        rowArray.put(res.getString("plan_type"));
+                        rowArray.put(status);
+                        rowArray.put(res.getString("plan_date_due"));
+                        rowArray.put(res.getString("plan_qty_sched"));
+                        jsonarray.put(rowArray);
+                
+               }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getMRPDetPurchBrowseView(String[] keys) { // item, site, startdate, enddate
+        JSONArray jsonarray = new JSONArray();
+        
+        
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+             
+               res = st.executeQuery("select * from pod_mstr " +
+                        " where pod_item = " + "'" + keys[0] + "'" + 
+                        " and pod_site = " + "'" + keys[1] + "'" +
+                        " and pod_due_date >= "  + "'" + keys[2] + "'" + 
+                        " and pod_due_date <= "  + "'" + keys[3] + "'" + 
+                        " order by pod_due_date " +   ";");
+                
+                while (res.next()) {
+                    
+                   JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("pod_item"));
+                        rowArray.put(res.getString("pod_nbr"));
+                        rowArray.put("PORD");
+                        rowArray.put(res.getString("pod_status"));
+                        rowArray.put(res.getString("pod_due_date"));
+                        rowArray.put((res.getInt("pod_ord_qty") - res.getInt("pod_rcvd_qty")));
+                        jsonarray.put(rowArray);
+                
+               }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    public static String getMRPDetTransBrowseView(String[] keys) { // item, site, startdate, enddate
+        JSONArray jsonarray = new JSONArray();
+        
+        double qoh = invData.getItemQOHTotal(keys[0], keys[1]);
+        double cost = invData.getItemCost(keys[0], "standard", keys[1]);
+        String itemtype = invData.getItemTypeByPart(keys[0]);
+        
+        try {
+            Connection con = null;
+            if (ds != null) {
+              con = ds.getConnection();
+            } else {
+              con = DriverManager.getConnection(url + db, user, pass);  
+            }
+            Statement st = con.createStatement();
+            ResultSet res = null;
+            try {  
+                 
+                int i = 0;
+             
+               res = st.executeQuery("SELECT tr_type, tr_eff_date, tr_id, tr_qty  " +
+                        " FROM  tran_mstr  " +
+                        " where tr_item = " + "'" + keys[0] + "'" + 
+                        " order by tr_eff_date desc limit 25 ;");
+                
+                while (res.next()) {                    
+                    
+                   JSONArray rowArray = new JSONArray(); 
+                        rowArray.put(res.getString("tr_type"));
+                        rowArray.put(res.getString("tr_eff_date"));
+                        rowArray.put(res.getString("tr_qty"));
+                        rowArray.put(qoh);
+                        rowArray.put(cost);
+                        rowArray.put(itemtype);
+                        
+                        jsonarray.put(rowArray);
+                
+               }
+                
+            } catch (SQLException s) {
+                MainFrame.bslog(s);
+            } finally {
+                if (res != null) {
+                    res.close();
+                }
+                if (st != null) {
+                    st.close();
+                }
+                con.close();
+            }
+        } catch (Exception e) {
+            MainFrame.bslog(e);
+        }
+        return jsonarray.toString(); 
+    }
+    
+    
     public static String getSchedulerBrowseView(String[] keys) {
         JSONArray jsonarray = new JSONArray();
         try {

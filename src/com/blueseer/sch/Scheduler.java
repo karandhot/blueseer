@@ -554,8 +554,12 @@ public class Scheduler extends javax.swing.JPanel {
                     message = getBrowseDetView();
                     break;    
                     
+                case "getBrowseOpView":
+                    message = getBrowseOpView(key[0]);
+                    break;    
+                    
                 default:
-                    message = new String[]{"1", "unknown action"};
+                    message = new String[]{"1", "unknown action: " + this.action};
             }
             
             
@@ -583,6 +587,11 @@ public class Scheduler extends javax.swing.JPanel {
             if (this.action.equals("getBrowseDetView")) {
                     done_getBrowseDetView();
             }
+            
+            if (this.action.equals("getBrowseOpView")) {
+                    done_getBrowseOpView();
+            }
+            
             
             } catch (Exception e) {
                 MainFrame.bslog(e);
